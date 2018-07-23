@@ -25,17 +25,18 @@ public class Dwm1000 {
         if(!Arrays.equals(deviceId,deviceIdTheor)){
             return false;
         }
-        /*
-        // RXAUTR: Receiver auto-re-enable
+
+        // SYS_CFG: system configuration (configure receiver)
         address    = (byte)0x04;
         offset     = new byte[1]; offset[0]  = (byte)0xff;
         dataLength = (byte)0x04;
         byte[] sysCfg = readDataSpi(address,offset,dataLength);
-        sysCfg[0] = (byte)0x00;
-        sysCfg[1] = (byte)0x12;
-        sysCfg[3] = (byte)0x20;
+        sysCfg[0] = (byte)0x00; // leave as is by default
+        sysCfg[1] = (byte)0x12; // leave as is by default
+        sysCfg[2] = (byte)0x40; // set RXM110K bit
+        sysCfg[3] = (byte)0x20; // set RXAUTR: Receiver auto-re-enable
         writeDataSpi(address, offset, sysCfg, dataLength);
-        */
+
         // CHAN_CTRL: Configure channel control
         address    = (byte)0x1f;
         offset     = new byte[1]; offset[0]  = (byte)0xff;
@@ -117,7 +118,7 @@ public class Dwm1000 {
         tx_fctrl[3] = (byte)0x00;
         tx_fctrl[4] = (byte)0x00;
         writeDataSpi(address, offset, tx_fctrl, dataLength);
-        /*
+
         // RX_FWTO: setup Rx Timeout 5ms and set RXWTOE bit
         address    = (byte)0x0c;
         offset     = new byte[1]; offset[0]  = (byte)0xff;
@@ -130,7 +131,7 @@ public class Dwm1000 {
         sysCfg = readDataSpi(address,offset,dataLength);
         sysCfg[3] |= 0x01;
         writeDataSpi(address, offset, sysCfg, dataLength);
-        */
+
         // No setup of IRQ (unlike in Quentin's code)
         // ...
 
@@ -185,7 +186,7 @@ public class Dwm1000 {
     }
 
     // Check for received frame over UWB channel
-    public byte[] checkForFrameUwb(){
+    public boolean checkForFrameUwb(){
         byte address;
         byte[] offset;
         byte dataLength;
@@ -194,18 +195,17 @@ public class Dwm1000 {
         offset     = new byte[1]; offset[0]  = (byte)0xff;
         dataLength = (byte)0x05;
         byte[] sys_status = readDataSpi(address,offset,dataLength);
-        return sys_status;
-        /*byte rxdfr = (byte)(sys_status[1] & 0x20);
-        if (rxdfr == (byte)0x20){
+        byte rxdfr_bit = (byte)(sys_status[1] & 0x20);
+        if (rxdfr_bit == (byte)0x20){
             return true;
         }
         else{
             return false;
-        }*/
+        }
 
     }
 
-    // Receive frame over UWB channel
+    // Read frame received over UWB channel - user code should use checkForFrameUwb() before calling this function
     public byte[] receiveFrameUwb(){
         byte address;
         byte[] offset;

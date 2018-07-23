@@ -32,7 +32,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         textTestBox3    = (TextView) findViewById(R.id.textView15);
         textTestBox4    = (TextView) findViewById(R.id.textView16);
         df = new DecimalFormat();
-        df.setMaximumFractionDigits(4);
+        df.setMaximumFractionDigits(6);
 
     }
 
@@ -63,43 +63,36 @@ public class TestDwm1000Activity extends AppCompatActivity {
         dwm1000.disableUwbRx();
         sleep(1);
 
-        // Send message
+        // SEND FIRST MESSAGE
         byte[] txMessage = new byte[1];
         byte lengthTxMessage = (byte)0x01;
         txMessage[0] =  master_first_message;
         dwm1000.sendFrameUwb(txMessage, lengthTxMessage);
-
         // Read TX_TIME register
         address    = (byte)0x17;
         offset     = new byte[1]; offset[0]  = (byte)0xff;
         dataLength = 10;
         byte[] tx_time = dwm1000.readDataSpi(address,offset,dataLength);
         byte[] tx_stamp = Arrays.copyOfRange(tx_time, 0, 5);
-        textTestBox2.setText("Tx Time stamp: " + df.format(time_unit*byteArray5ToLong(tx_stamp)) + " sec");
+        textTestBox2.setText("Tx - Timestamp: " + df.format(time_unit*byteArray5ToLong(tx_stamp)) + " sec");
 
-        // Read SYS_STATUS register
+        // RECEIVE FIRST RESPONSE
         sleep(10);
-        byte[] sys_status = dwm1000.checkForFrameUwb();
-        textTestBox3.setText("SYS_STATUS: 0x" + byteArrayToHex(sys_status));
-
-
-
-        /*
-        byte[] sys_status;
-        for (int i=0; i<1000; i++) {
-            sys_status = dwm1000.checkForFrameUwb();
-            textTestBox3.setText("SYS_STATUS: 0x" + byteArrayToHex(sys_status));
-            byte rxdfr = (byte)(sys_status[1] & 0x20);
-            if (rxdfr == (byte)0x20){
-                textTestBox4.setText("SUCCESS: Frame received ! ");
-                break;
-            }
-            else{
-                textTestBox4.setText("FAILURE: Frame not received ! ");
-            }
-            sleep(1);
+        if (dwm1000.checkForFrameUwb()){
+            byte[] rx_frame = dwm1000.receiveFrameUwb();
+            textTestBox3.setText("Rx - Payload: 0x" + byteArrayToHex(rx_frame));
+            // Read RX_TIME register
+            address    = (byte)0x15;
+            offset     = new byte[1]; offset[0]  = (byte)0xff;
+            dataLength = 14;
+            byte[] rx_time = dwm1000.readDataSpi(address,offset,dataLength);
+            byte[] rx_stamp = Arrays.copyOfRange(rx_time, 0, 5);
+            textTestBox4.setText("Rx - Timestamp: " + df.format(time_unit*byteArray5ToLong(rx_stamp)) + " sec");
         }
-        */
+        else{
+            textTestBox3.setText("FAILURE: Frame not received ! ");
+        }
+
 
     }
 
