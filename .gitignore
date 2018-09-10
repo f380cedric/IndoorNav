@@ -41,7 +41,7 @@ captures/
 .idea/dictionaries
 .idea/libraries
 .idea/caches
-
+.idea/modules.xml
 # MacOS
 .DS_Store
 
