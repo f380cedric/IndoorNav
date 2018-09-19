@@ -1,15 +1,13 @@
 package com.example.francois.indoornav;
 
-import android.content.Intent;
-
 import java.util.Arrays;
 import static android.os.SystemClock.sleep;
 
 abstract class Dwm1000 {
 
     private static final byte[] DEV_ID_THEOR    = {(byte)0x30,(byte)0x01,(byte)0xca,(byte)0xde};
-    static final double TIME_UNIT               = 1 / (128 * 499.2 * 1000000);
-    private static final short ANTENNA_DELAY    = (short)0x8000;
+            static final double TIME_UNIT       = 1 / (128 * 499.2 * 1000000);
+    private static final short  ANTENNA_DELAY   = (short)0x8000;
 
     /*                  REGISTERS MAP                */
     private static final byte DEV_ID     = (byte)0x00;
@@ -67,11 +65,12 @@ abstract class Dwm1000 {
     /*                 REGISTERS MASK                */
 
     private static final int RX_ERROR_MASK      = 0x4279000; //SYS_STATUS, length: 4
-    private static final int RX_NO_RESET_MASK   = 0x4200000;
+    private static final int RX_RESET_MASK      = 0x79000;
     private static final int RX_OK              = 0x6400;
+    private static final int RX_MUST_CLEAR      = 0x60000;
 
 
-    private FT311SPIMasterInterface spimInterface;
+    private final FT311SPIMasterInterface spimInterface;
 
     // Constructor
     Dwm1000(FT311SPIMasterInterface my_spimInterface){
@@ -245,24 +244,29 @@ abstract class Dwm1000 {
         // SYS_STATUS: check for RX error or timeout
         address = SYS_STATUS;
         dataLength = (byte) 0x04;
-        int sys_status = byteArray3ToInt(readDataSpi(address, dataLength));
+        int sys_status = byteArray4ToInt(readDataSpi(address, dataLength));
         if ((sys_status & RX_ERROR_MASK) != 0) {
+            if ((sys_status & RX_MUST_CLEAR) != 0) {
+                writeDataSpi(address, (byte)0x02, new byte[] {(byte)0x06}, (byte)0x01);
+            }
             result = 2;
-            if ((sys_status & RX_NO_RESET_MASK) == 0) {
+            if ((sys_status & RX_RESET_MASK) != 0) {
                 resetRx();
             }
             if ((sys_status & 0x20000) == 0) {
                 enableUwbRx();
                 result = 1;
             }
-        } else if ((sys_status & RX_OK) != 0) {
+        } else if ((sys_status & RX_OK) == RX_OK) {
             result = 0;
+        } else if ((sys_status & (1<<(RXDFR+8))) == 1<<(RXDFR+8)) {
+            throw new java.lang.Error("LDE misconfiguration");
         }
         return result;
     }
 
     boolean checkFrameSent(){
-        return (readDataSpi(Dwm1000.SYS_STATUS, (byte) 0x01)[0] & (1 << Dwm1000.TXFRS)) == (1 << Dwm1000.TXFRS);
+        return (readDataSpi(SYS_STATUS, (byte) 0x01)[0] & (1 << TXFRS)) == (1 << TXFRS);
     }
 
     // Read frame received over UWB channel - user code should use checkForFrameUwb() before calling this function
@@ -489,21 +493,15 @@ abstract class Dwm1000 {
     private void maxSpeedFT311(){
         byte clockPhaseMode      = (byte) 0x00;
         byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 18000000;
+        int clockFreq            = 3000000;
         spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 
-    public static int byteArray4ToInt(byte[] bytes){
+    private static int byteArray4ToInt(byte[] bytes){
         return (bytes[0] & 0xFF) |
                 (bytes[1] & 0xFF) << 8 |
                 (bytes[2] & 0xFF) << 16 |
                 (bytes[3] & 0xFF) << 24;
-    }
-
-    private static int byteArray3ToInt(byte[] bytes){
-        return (bytes[0] & 0xFF) |
-                (bytes[1] & 0xFF) << 8 |
-                (bytes[2] & 0xFF) << 16;
     }
 
     static long byteArray5ToLong(byte[] bytes) {
