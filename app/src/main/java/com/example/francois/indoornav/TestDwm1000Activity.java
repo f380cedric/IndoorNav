@@ -6,17 +6,18 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
-
-import static android.os.SystemClock.sleep;
 
 public class TestDwm1000Activity extends AppCompatActivity {
 
-    public FT311SPIMasterInterface spimInterface;
-    public Dwm1000 dwm1000;
-    TextView textDWM1000ID, textTestBox, textTestBox2, textTestBox3, textTestBox4 ;
-    private double time_unit = 0.00000000001565;
-    DecimalFormat df;
+    private FT311SPIMasterInterface spimInterface;
+    private Dwm1000Master dwm1000;
+    private TextView textDWM1000ID;
+    private TextView textTestBox;
+    private TextView textTestBox2;
+    private TextView textTestBox3;
+    private TextView textTestBox4 ;
+
+    private DecimalFormat df;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +25,13 @@ public class TestDwm1000Activity extends AppCompatActivity {
         setContentView(R.layout.activity_test_dwm1000);
 
         spimInterface = new FT311SPIMasterInterface(this);
-        dwm1000 = new Dwm1000(spimInterface);
+        dwm1000 = new Dwm1000Master(spimInterface);
 
-        textDWM1000ID   = (TextView) findViewById(R.id.textView7);
-        textTestBox     = (TextView) findViewById(R.id.textView);
-        textTestBox2    = (TextView) findViewById(R.id.textView14);
-        textTestBox3    = (TextView) findViewById(R.id.textView15);
-        textTestBox4    = (TextView) findViewById(R.id.textView16);
+        textDWM1000ID   = findViewById(R.id.textView7);
+        textTestBox     = findViewById(R.id.textView);
+        textTestBox2    = findViewById(R.id.textView14);
+        textTestBox3    = findViewById(R.id.textView15);
+        textTestBox4    = findViewById(R.id.textView16);
         df = new DecimalFormat();
         df.setMaximumFractionDigits(6);
 
@@ -49,49 +50,60 @@ public class TestDwm1000Activity extends AppCompatActivity {
     }
 
     // Button to explore DWM1000 Environment
-    public void exploreDwm1000Environment(View view){
+    public void exploreDwm1000Environment(View view) {
         byte address;
         byte[] offset;
         byte dataLength;
 
         // Prepare messages to be sent
-        byte master_first_message = (byte)0x12;
-        byte master_second_message = (byte)0x22;
-        byte slave_standard_message = (byte)0x2a;
+        byte master_first_message = (byte) 0x11;
+        byte master_second_message = (byte) 0x21;
+        byte slave_standard_message = (byte) 0x1a;
 
         // Disable Rx to save power
-        dwm1000.disableUwbRx();
-        sleep(1);
+        //dwm1000.disableUwbRx();
+        //sleep(1);
 
         // SEND FIRST MESSAGE
-        byte[] txMessage = new byte[1];
-        byte lengthTxMessage = (byte)0x01;
-        txMessage[0] =  master_first_message;
+        /*byte[] txMessage = new byte[1];
+        byte lengthTxMessage = (byte) 0x01;
+        txMessage[0] = master_first_message;
         dwm1000.sendFrameUwb(txMessage, lengthTxMessage);
         // Read TX_TIME register
-        address    = (byte)0x17;
-        offset     = new byte[1]; offset[0]  = (byte)0xff;
-        dataLength = 10;
-        byte[] tx_time = dwm1000.readDataSpi(address,offset,dataLength);
+        address = (byte) 0x17;
+        dataLength = (byte) 10;
+        byte TxOk;
+        do {
+            TxOk = (byte) (dwm1000.readDataSpi(Dwm1000.SYS_STATUS, (byte) 0x01)[0] & (1 << Dwm1000.TXFRS));
+        } while (TxOk != (byte) (1 << Dwm1000.TXFRS));
+        byte[] tx_time = dwm1000.readDataSpi(address, dataLength);
         byte[] tx_stamp = Arrays.copyOfRange(tx_time, 0, 5);
-        textTestBox2.setText("Tx - Timestamp: " + df.format(time_unit*byteArray5ToLong(tx_stamp)) + " sec");
+        textTestBox2.setText("Tx - Timestamp: " + df.format(Dwm1000.TIME_UNIT * byteArray5ToLong(tx_stamp)) + " sec");
 
         // RECEIVE FIRST RESPONSE
         sleep(10);
-        if (dwm1000.checkForFrameUwb()){
+        if (dwm1000.checkForFrameUwb()) {
             byte[] rx_frame = dwm1000.receiveFrameUwb();
-            textTestBox3.setText("Rx - Payload: 0x" + byteArrayToHex(rx_frame));
+            textTestBox3.setText("Rx - PaydeviceIdTheorload: 0x" + byteArrayToHex(rx_frame));
             // Read RX_TIME register
-            address    = (byte)0x15;
-            offset     = new byte[1]; offset[0]  = (byte)0xff;
+            address = (byte) 0x15;
             dataLength = 14;
-            byte[] rx_time = dwm1000.readDataSpi(address,offset,dataLength);
+            byte[] rx_time = dwm1000.readDataSpi(address, dataLength);
             byte[] rx_stamp = Arrays.copyOfRange(rx_time, 0, 5);
-            textTestBox4.setText("Rx - Timestamp: " + df.format(time_unit*byteArray5ToLong(rx_stamp)) + " sec");
-        }
-        else{
+            textTestBox4.setText("Rx - Timestamp: " + df.format(Dwm1000.TIME_UNIT * byteArray5ToLong(rx_stamp)) + " sec");
+        } else {
             textTestBox3.setText("FAILURE: Frame not received ! ");
+        }*/
+
+        /*Thread t = new Thread(dwm1000, "ranging_thread");
+        t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        textTestBox4.setText("Timestamp: " + df.format(dwm1000.duration));*/
+        textTestBox4.setText("Timestamp: " + df.format(dwm1000.getDistance()));
 
 
     }
@@ -109,19 +121,11 @@ public class TestDwm1000Activity extends AppCompatActivity {
 
     // Convert byte to hex string
     private static String byteToHex(byte a) {
-        StringBuilder sb = new StringBuilder(1 * 2);
-        sb.append(String.format("%02x", a));
-        return sb.toString();
+        return String.format("%02x", a);
     }
 
     // Convert 5-element byte array to int
-    private long byteArray5ToLong(byte[] bytes) {
-        return (long)(bytes[0] & 0xFF) |
-                (long)(bytes[1] & 0xFF) << 8 |
-                (long)(bytes[2] & 0xFF) << 16 |
-                (long)(bytes[3] & 0xFF) << 24 |
-                (long)(bytes[4] & 0xFF) << 32;
-    }
+
 
     @Override
     protected void onResume() {

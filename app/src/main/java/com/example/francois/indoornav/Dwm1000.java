@@ -3,7 +3,7 @@ package com.example.francois.indoornav;
 import java.util.Arrays;
 import static android.os.SystemClock.sleep;
 
-public class Dwm1000 {
+abstract class Dwm1000 {
 
     private static final byte[] DEV_ID_THEOR    = {(byte)0x30,(byte)0x01,(byte)0xca,(byte)0xde};
     static final double TIME_UNIT               = 1 / (128 * 499.2 * 1000000);
