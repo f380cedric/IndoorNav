@@ -1,6 +1,8 @@
 package com.example.francois.indoornav;
 
+import android.os.AsyncTask;
 import android.os.SystemClock;
+import android.util.Log;
 
 import java.util.Arrays;
 
@@ -27,7 +29,7 @@ class Dwm1000Master extends Dwm1000 {
         }
     }
 
-    double getDistance() {
+    long getDistance() {
         long[] allClockTime = new long[6 * messagesArray.length];
         long start, stop;
         start = SystemClock.elapsedRealtimeNanos();
@@ -42,38 +44,53 @@ class Dwm1000Master extends Dwm1000 {
     private long[] ranging(UwbMessages messages) {
         long[] clockTime = new long[6];
         State state = State.POLL_INIT;
+        int caseImIn = 0;
         while (state != State.END) {
+            Log.d("Current state: ", state.toString());
             switch (state) {
                 case POLL_INIT:
+                    caseImIn = 0;
                     sendFrameUwb(messages.masterPoll, (byte) messages.masterPoll.length);
                     state = State.WAIT_POLL_SEND;
+                    break;
                 case WAIT_POLL_SEND:
+                    caseImIn = 0;
                     if (checkFrameSent()) {
                         clockTime[0] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.WAIT_RESPONSE;
+                        caseImIn = 1;
                     }
                     break;
                 case WAIT_RESPONSE:
+                    caseImIn = -1;
                     switch (checkForFrameUwb()) {
                         case 0:
+                            caseImIn = 0;
                             state = State.POLL_INIT;
                             if (receiveFrameUwb()[0] == messages.slaveResponse[0]) {
+                                caseImIn = 10;
                                 sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
                                 clockTime[3] = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
                                 state = State.WAIT_FINAL_SEND;
                             }
                             break;
                         case 1:
+                            caseImIn = 1;
+                            state = State.POLL_INIT;
                             break;
                         case 2:
+                            caseImIn = 2;
                             state = State.POLL_INIT;
                             break;
                         case 3:
+                            caseImIn = 3;
                             break;
                     }
                     break;
                 case WAIT_FINAL_SEND:
+                    caseImIn = 0;
                     if (checkFrameSent()) {
+                        caseImIn = 1;
                         clockTime[4] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.GET_TIMES;
                     }
@@ -81,25 +98,32 @@ class Dwm1000Master extends Dwm1000 {
                 case GET_TIMES:
                     switch (checkForFrameUwb()) {
                         case 0:
+                            caseImIn = 0;
                             state = State.END;
                             byte[] data = receiveFrameUwb();
                             clockTime[1] = byteArray5ToLong(Arrays.copyOfRange(data, 0, 5));
                             clockTime[2] = byteArray5ToLong(Arrays.copyOfRange(data, 5, 10));
                             clockTime[5] = byteArray5ToLong(Arrays.copyOfRange(data, 10, 15));
                             if (clockTime[5] < clockTime[2] || clockTime[4] < clockTime[0]) {
+                                caseImIn = 11;
                                 state = State.POLL_INIT;
                             }
                             break;
                         case 1:
+                            caseImIn = 1;
+                            state = State.POLL_INIT;
                             break;
                         case 2:
+                            caseImIn = 2;
                             state = State.POLL_INIT;
                             break;
                         case 3:
+                            caseImIn = 3;
                             break;
                     }
                     break;
             }
+            Log.d("Outputs: ", String.valueOf(caseImIn));
         }
         return clockTime;
     }

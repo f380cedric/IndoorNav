@@ -1,9 +1,12 @@
 package com.example.francois.indoornav;
 
-import android.os.Debug;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -17,8 +20,41 @@ public class TestDwm1000Activity extends AppCompatActivity {
     private TextView textTestBox2;
     private TextView textTestBox3;
     private TextView textTestBox4 ;
+    private Location mytask;
+    private Switch trackingSwitch;
 
     private DecimalFormat df;
+
+    class Location extends AsyncTask<Void, Integer, Long> {
+
+
+        @Override
+        protected Long doInBackground(Void... voids) {
+            int it = 0;
+            while (!isCancelled()) {
+                try {
+                    Thread.sleep(500);
+                    dwm1000.getDistance();
+                } catch (Exception e) {
+                    Log.v("Error:", e.toString());
+                }
+                publishProgress(++it);
+            }
+            return dwm1000.getDistance();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            textTestBox4.setText("Iteration: " + values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Long aLong) {
+            super.onPostExecute(aLong);
+            textTestBox4.setText("Timestamp: " + aLong);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,12 +63,14 @@ public class TestDwm1000Activity extends AppCompatActivity {
 
         spimInterface = new FT311SPIMasterInterface(this);
         dwm1000 = new Dwm1000Master(spimInterface);
+        mytask = new Location();
 
         textDWM1000ID   = findViewById(R.id.textView7);
         textTestBox     = findViewById(R.id.textView);
         textTestBox2    = findViewById(R.id.textView14);
         textTestBox3    = findViewById(R.id.textView15);
         textTestBox4    = findViewById(R.id.textView16);
+        trackingSwitch  = findViewById(R.id.switch1);
         df = new DecimalFormat();
         df.setMaximumFractionDigits(6);
 
@@ -48,71 +86,27 @@ public class TestDwm1000Activity extends AppCompatActivity {
         }
         byte[] deviceId = dwm1000.readDeviceId();
         textDWM1000ID.setText("Device ID: 0x" + byteArrayToHex(deviceId));
+        textTestBox2.setText(mytask.getStatus().toString());
     }
 
     // Button to explore DWM1000 Environment
-    public void exploreDwm1000Environment(View view) {
-        byte address;
-        byte[] offset;
-        byte dataLength;
+    public void trackingSwitch(View view) {
 
-        // Prepare messages to be sent
-        byte master_first_message = (byte) 0x11;
-        byte master_second_message = (byte) 0x21;
-        byte slave_standard_message = (byte) 0x1a;
-
-        // Disable Rx to save power
-        //dwm1000.disableUwbRx();
-        //sleep(1);
-
-        // SEND FIRST MESSAGE
-        /*byte[] txMessage = new byte[1];
-        byte lengthTxMessage = (byte) 0x01;
-        txMessage[0] = master_first_message;
-        dwm1000.sendFrameUwb(txMessage, lengthTxMessage);
-        // Read TX_TIME register
-        address = (byte) 0x17;
-        dataLength = (byte) 10;
-        byte TxOk;
-        do {
-            TxOk = (byte) (dwm1000.readDataSpi(Dwm1000.SYS_STATUS, (byte) 0x01)[0] & (1 << Dwm1000.TXFRS));
-        } while (TxOk != (byte) (1 << Dwm1000.TXFRS));
-        byte[] tx_time = dwm1000.readDataSpi(address, dataLength);
-        byte[] tx_stamp = Arrays.copyOfRange(tx_time, 0, 5);
-        textTestBox2.setText("Tx - Timestamp: " + df.format(Dwm1000.TIME_UNIT * byteArray5ToLong(tx_stamp)) + " sec");
-
-        // RECEIVE FIRST RESPONSE
-        sleep(10);
-        if (dwm1000.checkForFrameUwb()) {
-            byte[] rx_frame = dwm1000.receiveFrameUwb();
-            textTestBox3.setText("Rx - PaydeviceIdTheorload: 0x" + byteArrayToHex(rx_frame));
-            // Read RX_TIME register
-            address = (byte) 0x15;
-            dataLength = 14;
-            byte[] rx_time = dwm1000.readDataSpi(address, dataLength);
-            byte[] rx_stamp = Arrays.copyOfRange(rx_time, 0, 5);
-            textTestBox4.setText("Rx - Timestamp: " + df.format(Dwm1000.TIME_UNIT * byteArray5ToLong(rx_stamp)) + " sec");
-        } else {
-            textTestBox3.setText("FAILURE: Frame not received ! ");
-        }*/
-
-        /*Thread t = new Thread(dwm1000, "ranging_thread");
-        t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        textTestBox4.setText("Timestamp: " + df.format(dwm1000.duration));*/
-        int it = 0;
-        while(it < 20) {
-            textTestBox4.setText("Timestamp: " + df.format(dwm1000.getDistance()));
-            ++it;
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        if(((Switch)view).isChecked()) {
+            switch (mytask.getStatus()) {
+                case PENDING:
+                    mytask.execute();
+                    break;
+                case RUNNING:
+                    break;
+                case FINISHED:
+                    mytask = new Location();
+                    mytask.execute();
+                    break;
             }
+        }
+        else {
+            mytask.cancel(true);
         }
 
     }
@@ -149,6 +143,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        mytask.cancel(true);
         spimInterface.DestroyAccessory();
         super.onDestroy();
     }
