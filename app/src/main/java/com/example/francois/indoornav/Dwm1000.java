@@ -246,15 +246,15 @@ abstract class Dwm1000 {
         dataLength = (byte) 0x04;
         int sys_status = byteArray4ToInt(readDataSpi(address, dataLength));
         if ((sys_status & RX_ERROR_MASK) != 0) {
+            result = 2;
             if ((sys_status & RX_MUST_CLEAR) != 0) {
                 writeDataSpi(address, (byte)0x02, new byte[] {(byte)0x06}, (byte)0x01);
             }
-            result = 2;
             if ((sys_status & RX_RESET_MASK) != 0) {
                 resetRx();
             }
             if ((sys_status & 0x20000) == 0) {
-                enableUwbRx();
+                //enableUwbRx();
                 result = 1;
             }
         } else if ((sys_status & RX_OK) == RX_OK) {

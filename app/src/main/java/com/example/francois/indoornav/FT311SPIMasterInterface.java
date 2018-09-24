@@ -31,7 +31,7 @@ public class FT311SPIMasterInterface extends Activity
     public FileInputStream inputstream;
     public FileOutputStream outputstream;
     public boolean mPermissionRequestPending = false;
-    public boolean READ_ENABLE = true;
+    public volatile boolean READ_ENABLE = true;
     public boolean accessory_attached = false;
     public handler_thread handlerThread;
 
@@ -40,7 +40,7 @@ public class FT311SPIMasterInterface extends Activity
     private int readcount;
     private byte status;
     private byte  maxnumbytes = (byte) 63; /*maximum data bytes, except command*/
-    public boolean datareceived = false;
+    public volatile boolean datareceived = false;
 
     public Context global_context;
 

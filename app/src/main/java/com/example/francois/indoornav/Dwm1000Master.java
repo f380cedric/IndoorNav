@@ -27,7 +27,7 @@ class Dwm1000Master extends Dwm1000 {
         }
     }
 
-    double getDistance() {
+    long getDistance() {
         long[] allClockTime = new long[6 * messagesArray.length];
         long start, stop;
         start = SystemClock.elapsedRealtimeNanos();
@@ -64,6 +64,7 @@ class Dwm1000Master extends Dwm1000 {
                             }
                             break;
                         case 1:
+                            state = State.POLL_INIT;
                             break;
                         case 2:
                             state = State.POLL_INIT;
@@ -91,6 +92,7 @@ class Dwm1000Master extends Dwm1000 {
                             }
                             break;
                         case 1:
+                            state = State.POLL_INIT;
                             break;
                         case 2:
                             state = State.POLL_INIT;
