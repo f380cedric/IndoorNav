@@ -103,8 +103,16 @@ public class TestDwm1000Activity extends AppCompatActivity {
             e.printStackTrace();
         }
         textTestBox4.setText("Timestamp: " + df.format(dwm1000.duration));*/
-        textTestBox4.setText("Timestamp: " + df.format(dwm1000.getDistance()));
-
+        int it = 0;
+        while(it < 20) {
+            textTestBox4.setText("Timestamp: " + df.format(dwm1000.getDistance()));
+            ++it;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 

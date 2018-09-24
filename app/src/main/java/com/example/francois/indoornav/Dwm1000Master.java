@@ -1,5 +1,7 @@
 package com.example.francois.indoornav;
 
+import android.os.SystemClock;
+
 import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
@@ -27,10 +29,14 @@ class Dwm1000Master extends Dwm1000 {
 
     double getDistance() {
         long[] allClockTime = new long[6 * messagesArray.length];
+        long start, stop;
+        start = SystemClock.elapsedRealtimeNanos();
         for (int i = 0; i < messagesArray.length; ++i) {
             System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
         }
-        return compute_distance(allClockTime); //FIXME
+        stop = SystemClock.elapsedRealtimeNanos();
+        //return compute_distance(allClockTime); //FIXME
+        return stop - start;
     }
 
     private long[] ranging(UwbMessages messages) {
