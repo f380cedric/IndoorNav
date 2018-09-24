@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
 
-    private final UwbMessages[] messagesArray = new UwbMessages[1]; //FIXME
+    private final UwbMessages[] messagesArray = new UwbMessages[2]; //FIXME
     enum State {
         POLL_INIT,
         WAIT_POLL_SEND,
@@ -43,7 +43,7 @@ class Dwm1000Master extends Dwm1000 {
                     state = State.WAIT_POLL_SEND;
                 case WAIT_POLL_SEND:
                     if (checkFrameSent()) {
-                        clockTime[0] = byteArray5ToLong(readDataSpi(Dwm1000.TX_TIME, (byte) 0x05));
+                        clockTime[0] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.WAIT_RESPONSE;
                     }
                     break;
@@ -53,7 +53,7 @@ class Dwm1000Master extends Dwm1000 {
                             state = State.POLL_INIT;
                             if (receiveFrameUwb()[0] == messages.slaveResponse[0]) {
                                 sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
-                                clockTime[3] = byteArray5ToLong(readDataSpi(Dwm1000.RX_TIME, (byte) 0x05));
+                                clockTime[3] = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
                                 state = State.WAIT_FINAL_SEND;
                             }
                             break;
@@ -61,13 +61,14 @@ class Dwm1000Master extends Dwm1000 {
                             break;
                         case 2:
                             state = State.POLL_INIT;
+                            break;
                         case 3:
                             break;
                     }
                     break;
                 case WAIT_FINAL_SEND:
                     if (checkFrameSent()) {
-                        clockTime[4] = byteArray5ToLong(readDataSpi(Dwm1000.TX_TIME, (byte) 0x05));
+                        clockTime[4] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.GET_TIMES;
                     }
                     break;
@@ -87,6 +88,7 @@ class Dwm1000Master extends Dwm1000 {
                             break;
                         case 2:
                             state = State.POLL_INIT;
+                            break;
                         case 3:
                             break;
                     }

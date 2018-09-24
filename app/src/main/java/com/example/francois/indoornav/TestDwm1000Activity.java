@@ -138,5 +138,11 @@ public class TestDwm1000Activity extends AppCompatActivity {
         super.onPause();
     }
 
+    @Override
+    protected void onDestroy() {
+        spimInterface.DestroyAccessory();
+        super.onDestroy();
+    }
+
 
 }
