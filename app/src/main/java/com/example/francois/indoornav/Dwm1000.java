@@ -493,7 +493,7 @@ abstract class Dwm1000 {
     private void maxSpeedFT311(){
         byte clockPhaseMode      = (byte) 0x00;
         byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 18000000;
+        int clockFreq            = 3000000;
         spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 

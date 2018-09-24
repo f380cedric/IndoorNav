@@ -3,6 +3,7 @@ package com.example.francois.indoornav;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
                     Thread.sleep(500);
                     dwm1000.getDistance();
                 } catch (Exception e) {
+                    Log.v("Error:", e.toString());
                 }
                 publishProgress(++it);
             }
