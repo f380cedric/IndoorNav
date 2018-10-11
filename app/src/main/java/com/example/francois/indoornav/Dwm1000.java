@@ -27,8 +27,8 @@ abstract class Dwm1000 {
     private static final byte RX_FQUAL   = (byte)0x12;
     private static final byte RX_TTCKI   = (byte)0x13;
     private static final byte RX_TTCKO   = (byte)0x14;
-    static final byte RX_TIME    = (byte)0x15;
-    static final byte TX_TIME    = (byte)0x17;
+            static final byte RX_TIME    = (byte)0x15;
+            static final byte TX_TIME    = (byte)0x17;
     private static final byte TX_ANTD    = (byte)0x18;
     private static final byte SYS_STATE  = (byte)0x19;
     private static final byte ACK_RESP_T = (byte)0x1A;
@@ -78,10 +78,7 @@ abstract class Dwm1000 {
     }
 
     // Initialize DWM1000
-    public boolean initDwm1000(){
-        byte address;
-        byte offset;
-        byte dataLength;
+    boolean initDwm1000(){
         // Reset DWM1000
         resetDwm1000();
         // Check DWM1000 ID
@@ -91,117 +88,83 @@ abstract class Dwm1000 {
         }
 
         // SYS_CFG: system configuration (configure receiver)
-        address    = SYS_CFG;
-        offset = (byte) 0x02;
-        dataLength = (byte)0x02;
         byte[] sysCfg = new byte[2];
         sysCfg[0] = (byte)(1<<RXM110K); // set RXM110K bit
         sysCfg[1] = (byte)0x00; //(byte)(1<<RXAUTR); // set RXAUTR: Receiver auto-re-enable
         // CANNOT USE RXAUTR while expecting correct RX timestamp
-        writeDataSpi(address, offset, sysCfg, dataLength);
+        writeDataSpi(SYS_CFG, (byte)0x02, sysCfg, (byte)0x02);
 
         // CHAN_CTRL: Configure channel control
-        address    = CHAN_CTRL;
-        dataLength = (byte)0x01;
-        offset = (byte) 0x02;
         byte[] chanCtrl = new byte[] {(byte) (1<<RXPRF)}; // Set RXPRF to 01
-        writeDataSpi(address, offset, chanCtrl, dataLength);
+        writeDataSpi(CHAN_CTRL, (byte)0x02, chanCtrl, (byte)0x01);
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // DEFAULT CONFIGURATIONS THAT SHOULD BE MODIFIED (SECTION 2.5.5 OF USER MANUAL)
         // AGC_TUNE1
-        address    = AGC_CTRL;
-        offset     = (byte)0x04;
-        dataLength = (byte)0x02;
         byte[] agc_tune1 = {(byte)0x70, (byte)0x88};
-        writeDataSpi(address, offset, agc_tune1, dataLength);
+        writeDataSpi(AGC_CTRL, (byte)0x04, agc_tune1, (byte)0x02);
+
         // AGC_TUNE2
-        address    = AGC_CTRL;
-        offset     = (byte)0x0c;
-        dataLength = (byte)0x04;
         byte[] agc_tune2 = {(byte)0x07, (byte)0xa9, (byte)0x02, (byte)0x25};
-        writeDataSpi(address, offset, agc_tune2, dataLength);
+        writeDataSpi(AGC_CTRL, (byte)0x0c, agc_tune2, (byte)0x04);
+
         // DRX_TUNE2
-        address    = DRX_CONF;
-        offset     = (byte)0x08;
-        dataLength = (byte)0x04;
         byte[] drx_tune2 = {(byte)0x2d, (byte)0x00, (byte)0x1a, (byte)0x31};
-        writeDataSpi(address, offset, drx_tune2, dataLength);
+        writeDataSpi(DRX_CONF, (byte)0x08, drx_tune2, (byte)0x04);
+
         // LDE_CFG1: NTM
-        address    = LDE_CTRL;
-        short bigOffset = (short)0x0806;
-        dataLength = (byte)0x01;
         byte[] lde_cfg1 = {(byte)0x6d};
-        writeDataSpi(address, bigOffset, lde_cfg1, dataLength);
+        writeDataSpi(LDE_CTRL, (short)0x0806, lde_cfg1, (byte)0x01);
+
         // LDE_CFG2
-        address    = LDE_CTRL;
-        bigOffset = (short) 0x1806;
-        dataLength = (byte)0x02;
         byte[] lde_cfg2 = {(byte)0x07, (byte)0x16};
-        writeDataSpi(address, bigOffset, lde_cfg2, dataLength);
+        writeDataSpi(LDE_CTRL, (short) 0x1806, lde_cfg2, (byte)0x02);
+
         // TX_POWER
-        address    = TX_POWER;
-        dataLength = (byte)0x04;
         byte[] tx_power = {(byte)0x48, (byte)0x28, (byte)0x08, (byte)0x0e};
-        writeDataSpi(address, tx_power, dataLength);
+        writeDataSpi(TX_POWER, tx_power, (byte)0x04);
+
         // RF_TXCTRL
-        address    = RF_CONF;
-        offset     = (byte)0x0c;
-        dataLength = (byte)0x03;
         byte[] rf_txctrl = {(byte)0xe0, (byte)0x3f, (byte)0x1e};
-        writeDataSpi(address, offset, rf_txctrl, dataLength);
+        writeDataSpi(RF_CONF, (byte)0x0c, rf_txctrl, (byte)0x03);
+
         // TC_PGDELAY
-        address    = TX_CAL;
-        offset     = (byte)0x0b;
-        dataLength = (byte)0x01;
         byte[] tc_pgdelay = {(byte)0xc0};
-        writeDataSpi(address, offset, tc_pgdelay, dataLength);
+        writeDataSpi(TX_CAL, (byte)0x0b, tc_pgdelay, (byte)0x01);
+
         // FS_PLLTUNE
-        address    = FS_CTRL;
-        offset     = (byte)0x0b;
-        dataLength = (byte)0x01;
         byte[] fs_plltune = {(byte)0xbe};
-        writeDataSpi(address, offset, fs_plltune, dataLength);
+        writeDataSpi(FS_CTRL, (byte)0x0b, fs_plltune, (byte)0x01);
+
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         // TX_FCTRL: Transmit frame control & TXBR 110 kbps
-        address    = TX_FCTRL;
-        dataLength = (byte)0x01;
-        offset = (byte) 0x01;
         byte[] tx_fctrl = new byte[] {(byte)(1<<TR)};
-
-        writeDataSpi(address, offset, tx_fctrl, dataLength);
+        writeDataSpi(TX_FCTRL, (byte)0x01, tx_fctrl, (byte)0x01);
 
         // RX_FWTO: setup Rx Timeout 5ms and set RXWTOE bit
-        address    = RX_FWTO;
-        dataLength = (byte)0x02;
         byte[] timeout = {(byte)0x88, (byte)0x13};
-        writeDataSpi(address, timeout, dataLength);
-        address    = SYS_CFG;
-        dataLength = (byte)0x01;
-        offset = (byte) 0x03;
-        sysCfg = readDataSpi(address, offset, dataLength);
+        writeDataSpi(RX_FWTO, timeout, (byte)0x02);
+
+        sysCfg = readDataSpi(SYS_CFG, (byte) 0x03, (byte)0x01);
         sysCfg[0] |= (1<<RXWTOE);
-        writeDataSpi(address, offset, sysCfg, dataLength);
+        writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, (byte)0x01);
 
         // No setup of IRQ (unlike in Quentin's code)
         // ...
 
         // TX_ANTD: Set the Tx antenna delay
-        address    = TX_ANTD;
-        dataLength = (byte)0x02;
         byte[] antennaDelay = {(byte)ANTENNA_DELAY, (byte)(ANTENNA_DELAY>>8)};
-        writeDataSpi(address, antennaDelay, dataLength);
-
+        writeDataSpi(TX_ANTD, antennaDelay, (byte)0x02);
 
         // End of initialization function
         return true;
     }
 
     // Read DWM1000 device ID
-    public byte[] readDeviceId(){
+    byte[] readDeviceId(){
         byte dataLength = (byte)DEV_ID_THEOR.length;
         return readDataSpi(DEV_ID,dataLength);
     }
@@ -209,25 +172,20 @@ abstract class Dwm1000 {
     // Send frame over UWB channel
     void sendFrameUwb(byte[] frame, byte frameLength){
         // maximum payload length is 125 bytes
-        byte address;
-        byte dataLength;
         // TX_BUFFER: write data into tx buffer
-        address    = TX_BUFFER;
-        dataLength = frameLength;
-        writeDataSpi(address, frame, dataLength);
+        writeDataSpi(TX_BUFFER, frame, frameLength);
+
         // TX_FCTRL: set TFLEN bits to specify length of payload
-        address    = TX_FCTRL;
-        dataLength = (byte)0x01;
         byte [] tx_fctrl = new byte[] {(byte)(frameLength+0x02)}; // +2 bytes for CRC
-        writeDataSpi(address, tx_fctrl, dataLength);
+        writeDataSpi(TX_FCTRL, tx_fctrl, (byte)0x01);
+
         // SYS_CTRL: Prepare transmission of a packet
-        address    = SYS_CTRL;
-        dataLength = (byte)0x01;
-        byte[] sys_ctrl = readDataSpi(address,dataLength);
+        byte[] sys_ctrl = readDataSpi(SYS_CTRL, (byte)0x01);
+
         sys_ctrl[0] |= (1<<TXSTRT); // set TXSTRT bit to start transmission
-        //sys_ctrl[0] &= ~(1<<TRXOFF); // clear TRXOFF bit to remove force idle mode // FIXME: unnecessary
+        //sys_ctrl[0] &= ~(1<<TRXOFF); // clear TRXOFF bit to remove force idle mode
         sys_ctrl[0] |= (1<<WAIT4RESP); // set WAIT4RESP bit to wait for response
-        writeDataSpi(address,sys_ctrl,dataLength);
+        writeDataSpi(SYS_CTRL,sys_ctrl, (byte)0x01);
     }
 
     //
@@ -271,23 +229,17 @@ abstract class Dwm1000 {
 
     // Read frame received over UWB channel - user code should use checkForFrameUwb() before calling this function
     byte[] receiveFrameUwb(){
-        byte address;
-        byte dataLength;
         // RX_FINFO: Get frame length
-        address    = RX_FINFO;
-        dataLength = (byte)0x01;
-        byte[] rx_finfo = readDataSpi(address,dataLength);
+        byte[] rx_finfo = readDataSpi(RX_FINFO, (byte)0x01);
         byte frameLength = (byte)((rx_finfo[0]&~(1<<7))-0x02); // -2 bytes for CRC
+
         // RX_BUFFER: Read received frame
-        address    = RX_BUFFER;
-        dataLength = frameLength;
-        return readDataSpi(address,dataLength);
+        return readDataSpi(RX_BUFFER, frameLength);
     }
 
     // Disable tranceiver (force idle)
     void idle(){
-        byte[] sys_ctrl = readDataSpi(SYS_CTRL,(byte)0x01);
-        sys_ctrl[0] |= (1<<TRXOFF); // set TRXOFF bit
+        byte[] sys_ctrl = new byte[] {(byte)(1<<TRXOFF)};
         writeDataSpi(SYS_CTRL,sys_ctrl,(byte)0x01);
     }
     // Disable UWB Rx
@@ -304,12 +256,8 @@ abstract class Dwm1000 {
     // Enable UWB Rx
     private void enableUwbRx(){
         // SYS_CTRL: Prepare transmission of a packet
-        byte address    = SYS_CTRL;
-        byte offset     = (byte)0x01;
-        byte dataLength = (byte)0x04;
-        byte[] sys_ctrl = readDataSpi(address,offset,dataLength);
-        sys_ctrl[0] |= 0x01; // set RXENAB bit to start receiving
-        writeDataSpi(address,offset,sys_ctrl,dataLength);
+        byte[] sys_ctrl = new byte[] {(byte)0x01}; // set RXENAB bit to start receiving
+        writeDataSpi(SYS_CTRL, (byte)0x01,sys_ctrl, (byte)0x01);
     }
 
 

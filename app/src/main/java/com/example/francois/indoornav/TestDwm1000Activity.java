@@ -24,34 +24,36 @@ public class TestDwm1000Activity extends AppCompatActivity {
 
     private DecimalFormat df;
 
-    class Location extends AsyncTask<Void, Integer, Long> {
+    class Location extends AsyncTask<Void, Double, String> {
 
 
         @Override
-        protected Long doInBackground(Void... voids) {
-            int it = 0;
+        protected String doInBackground(Void... voids) {
+            double it = 0;
+            double[] distance = new double[3];
             while (!isCancelled()) {
                 try {
-                    Thread.sleep(500);
-                    dwm1000.getDistance();
+                    //Thread.sleep(500);
+                    distance = dwm1000.getDistances();
                 } catch (Exception e) {
                     Log.v("Error:", e.toString());
                 }
-                publishProgress(++it);
+                publishProgress(++it, distance[0]);
             }
-            return dwm1000.getDistance();
+            return "Done";
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
+        protected void onProgressUpdate(Double... values) {
             super.onProgressUpdate(values);
-            textTestBox4.setText("Iteration: " + values[0]);
+            textTestBox2.setText("Iteration: " + values[0]);
+            textTestBox3.setText("Distances: " + values[1]);
         }
 
         @Override
-        protected void onPostExecute(Long aLong) {
-            super.onPostExecute(aLong);
-            textTestBox4.setText("Timestamp: " + aLong);
+        protected void onPostExecute(String values) {
+            super.onPostExecute(values);
+            textTestBox3.setText(values);
         }
     }
 
@@ -85,7 +87,6 @@ public class TestDwm1000Activity extends AppCompatActivity {
         }
         byte[] deviceId = dwm1000.readDeviceId();
         textDWM1000ID.setText("Device ID: 0x" + byteArrayToHex(deviceId));
-        textTestBox2.setText(mytask.getStatus().toString());
     }
 
     // Button to explore DWM1000 Environment
@@ -108,6 +109,10 @@ public class TestDwm1000Activity extends AppCompatActivity {
             mytask.cancel(true);
         }
 
+    }
+
+    public void taskStatus(View view) {
+        textTestBox4.setText(mytask.getStatus().toString());
     }
 
     // Convert byte array to hex string

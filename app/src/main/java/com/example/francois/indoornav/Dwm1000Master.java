@@ -7,7 +7,10 @@ import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
 
-    private final UwbMessages[] messagesArray = new UwbMessages[2]; //FIXME
+    private final int           numberSlaves    = 1;
+    private final UwbMessages[] messagesArray   = new UwbMessages[numberSlaves]; //FIXME
+    private static final double correctivePol[] = { -0.0081, 0.0928, 0.6569, -0.0612};
+    private              double distancemm[]    = new double[numberSlaves];
     enum State {
         POLL_INIT,
         WAIT_POLL_SEND,
@@ -17,27 +20,33 @@ class Dwm1000Master extends Dwm1000 {
         END,
     }
 
+
+
+
+
     Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
         super(my_spimInterface);
 
-        for(int i = 0; i < messagesArray.length; ++i) {
+        for(int i = 0; i < numberSlaves; ++i) {
             messagesArray[i] = new UwbMessages();
             messagesArray[i].masterPoll     = new byte[] {(byte)(0x11 + i)};
             messagesArray[i].masterFinal    = new byte[] {(byte)(0x21 + i)};
             messagesArray[i].slaveResponse  = new byte[] {(byte)(0x1A + (i<<4))};
+            distancemm[i] = 0.0;
         }
     }
 
-    long getDistance() {
+    double[] getDistances() {
         long[] allClockTime = new long[6 * messagesArray.length];
-        long start, stop;
-        start = SystemClock.elapsedRealtimeNanos();
-        for (int i = 0; i < messagesArray.length; ++i) {
+        //long start, stop;
+        //start = SystemClock.elapsedRealtimeNanos();
+        for (int i = 0; i < numberSlaves; ++i) {
+            Log.d("Slave number", String.valueOf(i));
             System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
         }
-        stop = SystemClock.elapsedRealtimeNanos();
-        //return compute_distance(allClockTime); //FIXME
-        return stop - start;
+        //stop = SystemClock.elapsedRealtimeNanos();
+        return compute_distances(allClockTime); //FIXME
+        //return stop - start;
     }
 
     private long[] ranging(UwbMessages messages) {
@@ -127,29 +136,33 @@ class Dwm1000Master extends Dwm1000 {
         return clockTime;
     }
 
-    private double compute_distance(long[] allClockTime) {
+    private double[] compute_distances(long[] allClockTime) {
         long tRoundMaster, tRoundSlave, tReplyMaster, tReplySlave;
-        double tof = 0.0;
-        double distance = 0.0;
+        double tof;
+        double distance;
         long[] clockTime = new long[6];
-        for(int i = 0; i < messagesArray.length; ++i) {
+        for(int i = 0; i < numberSlaves; ++i) {
             System.arraycopy(allClockTime, i * 6, clockTime, 0, 6);
             tRoundMaster = clockTime[3] - clockTime[0];
             tReplyMaster = clockTime[4] - clockTime[3];
             tReplySlave = clockTime[2] - clockTime[1];
             tRoundSlave = clockTime[5] - clockTime[2];
 
-            if (tReplySlave > tRoundMaster || tReplyMaster > tRoundSlave) {
-                tof = 0.0;
-                distance = 0.0;
-            } else {
+            //if (!(tReplySlave > tRoundMaster || tReplyMaster > tRoundSlave)) {
                 tof = (tRoundMaster * tRoundSlave - tReplyMaster * tReplySlave) * TIME_UNIT /
                         (tRoundMaster + tRoundSlave + tReplyMaster + tReplySlave);
-                distance = 0.0;
-            }
+                double distanceMeasured = tof * 299792458;
+                distance = correctivePol[0];
+                for(int j = 1; j < 4; ++j) {
+                    distance = distance * distanceMeasured + correctivePol[j];
+                }
+                if (distance < 100) {
+                    distancemm[i] = distance * 1000;
+                }
+            //}
             //TODO
         }
-        return tof;
+        return distancemm;
     }
 
 
