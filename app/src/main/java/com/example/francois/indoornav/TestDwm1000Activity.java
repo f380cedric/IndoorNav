@@ -31,10 +31,12 @@ public class TestDwm1000Activity extends AppCompatActivity {
         protected String doInBackground(Void... voids) {
             double it = 0;
             double[] distance = new double[3];
+            double[] coor = new double[2];
             while (!isCancelled()) {
                 try {
                     //Thread.sleep(500);
                     distance = dwm1000.getDistances();
+                    //coor = dwm1000.getCoordinates();
                 } catch (Exception e) {
                     Log.v("Error:", e.toString());
                 }
