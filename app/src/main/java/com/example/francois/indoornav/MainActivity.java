@@ -28,5 +28,9 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(this, TestOrientationActivity.class));
     }
 
+    public void startCalibration(View view) {
+        startActivity(new Intent(this, CalibrationTest.class));
+    }
+
 
 }
