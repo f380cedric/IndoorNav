@@ -317,20 +317,18 @@ abstract class Dwm1000 {
     //  1-octet
     byte[] readDataSpi(byte address, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
         readWriteBuffer[0] = address;
         ++numBytes;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 1, numBytes);
     }
     //  2-octet
     private byte[] readDataSpi(byte address, byte offset, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -338,13 +336,12 @@ abstract class Dwm1000 {
         readWriteBuffer[1] = offset;
         numBytes += 2;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 2, numBytes);
     }
     //  3-octet
     byte[] readDataSpi(byte address, short offset, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -355,7 +352,7 @@ abstract class Dwm1000 {
         numBytes += 3;
 
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 3, numBytes);
     }
 
@@ -363,7 +360,6 @@ abstract class Dwm1000 {
     //  1-octet
     private void writeDataSpi(byte address, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -372,12 +368,11 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.SendData(numBytes, readWriteBuffer);
     }
     //  2-octet
     private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -388,12 +383,11 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.SendData(numBytes, readWriteBuffer);
     }
     //  3-octet
     private void writeDataSpi(byte address, short offset, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
-        byte[] numReadWritten = new byte[] {(byte) 0x00};
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -405,7 +399,7 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer, numReadWritten);
+        spimInterface.SendData(numBytes, readWriteBuffer);
     }
 
 
@@ -460,6 +454,7 @@ abstract class Dwm1000 {
         pmsc_ctrl0[0] = (byte)0x00;
         pmsc_ctrl0[1] = (byte)0x02;
         writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
+        sleep(10);
         maxSpeedFT311();
     }
 
@@ -493,7 +488,7 @@ abstract class Dwm1000 {
     private void maxSpeedFT311(){
         byte clockPhaseMode      = (byte) 0x00;
         byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 3000000;
+        int clockFreq            = 18000000;
         spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 

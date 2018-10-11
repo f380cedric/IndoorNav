@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,51 +12,46 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
-import android.os.Handler;
-import android.os.Message;
+
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.widget.Toast;
 
 /******************************FT311 GPIO interface class******************************************/
-public class FT311SPIMasterInterface extends Activity
+class FT311SPIMasterInterface
 {
 
     private static final String ACTION_USB_PERMISSION =    "com.SPIMasterDemo.USB_PERMISSION";
-    public UsbManager usbmanager;
-    public UsbAccessory usbaccessory;
-    public PendingIntent mPermissionIntent;
-    public ParcelFileDescriptor filedescriptor;
-    public FileInputStream inputstream;
-    public FileOutputStream outputstream;
-    public boolean mPermissionRequestPending = false;
-    public volatile boolean READ_ENABLE = true;
-    public boolean accessory_attached = false;
-    public handler_thread handlerThread;
+    private UsbManager usbmanager;
+    private PendingIntent mPermissionIntent;
+    private ParcelFileDescriptor filedescriptor;
+    private FileInputStream inputstream;
+    private FileOutputStream outputstream;
+    private boolean mPermissionRequestPending = false;
+    //private volatile boolean READ_ENABLE = true;
+    //private boolean accessory_attached = false;
+    //public handler_thread handlerThread;
 
     private byte [] usbdata;
     private byte []	writeusbdata;
     private int readcount;
-    private byte status;
-    private byte  maxnumbytes = (byte) 63; /*maximum data bytes, except command*/
-    public volatile boolean datareceived = false;
+    private final byte  maxnumbytes = (byte) 63; /*maximum data bytes, except command*/
+    //public volatile boolean datareceived = true;
 
-    public Context global_context;
+    private Context global_context;
 
-    public static String ManufacturerString = "mManufacturer=FTDI";
-    public static String ModelString = "mModel=FTDISPIMasterDemo";
-    public static String VersionString = "mVersion=1.0";
+    private static final String ManufacturerString = "FTDI";
+    private static final String ModelString = "FTDISPIMasterDemo";
+    private static final String VersionString = "1.0";
 
 
     /*constructor*/
-    public FT311SPIMasterInterface(Context context){
+    FT311SPIMasterInterface(Context context){
         super();
         global_context = context;
         /*shall we start a thread here or what*/
         usbdata = new byte[64];
         writeusbdata = new byte[64];
-
-        /***********************USB handling******************************************/
 
         usbmanager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
         // Log.d("LED", "usbmanager" +usbmanager);
@@ -71,16 +65,16 @@ public class FT311SPIMasterInterface extends Activity
     }
 
     /*reset method*/
-    public void Reset()
+    synchronized int Reset()
     {
         /*create the packet*/
         writeusbdata[0] = (byte) 0x64;
         /*send the packet over the USB*/
-        SendPacket(1);
+        return SendPacket(1);
     }
 
 
-    public void SetConfig(byte clockPhase, byte dataOrder, int clockFreq)
+    synchronized int SetConfig(byte clockPhase, byte dataOrder, int clockFreq)
     {
         /*check for maximum clock freq, 24Mhz*/
         if(clockFreq > 24000000){
@@ -95,146 +89,163 @@ public class FT311SPIMasterInterface extends Activity
         writeusbdata[5] = (byte)((clockFreq >> 16)& 0xff);
         writeusbdata[6] = (byte)((clockFreq >> 24)& 0xff);
 
-        SendPacket((int)7);;
+        return SendPacket(7);
 
     }
 
 
     /*write data*/
-    public byte SendData(byte numBytes, byte[] buffer, byte [] numReadBytes)
+    synchronized int SendData(byte numBytes, byte[] buffer)
     {
-        status = 0x00; /*error by default*/
+        int status;
+        //status = 0x02; /*error by default*/
         /*
          * if num bytes are more than maximum limit
          */
         if(numBytes < 1){
             /*return the status with the error in the command*/
-            return status;
+            return 0x01;
         }
 
         /*check for maximum limit*/
         if(numBytes > maxnumbytes){
-            numBytes = maxnumbytes;
+            return 0x02;
         }
 
         /*prepare the packet to be sent*/
-        for(int count = 0;count<numBytes;count++)
-        {
-            writeusbdata[count+1] = buffer[count];
-        }
+        System.arraycopy(buffer, 0, writeusbdata, 1, numBytes);
 
         /*prepare the usbpacket*/
         writeusbdata[0] = (byte) 0x62;
-        SendPacket((int)(numBytes+1));
-        datareceived = false;
 
-        /*wait while the data is received*/
-        /*FIXME, may be create a thread to wait on , but any
-         * way has to wait in while loop
-         */
-        while(true){
-            Log.d("SPI", "Writing");
-            if(datareceived == true){
-                break;
-            }
+        //do {
+        if ((status = SendPacket(++numBytes)) != 0) {
+            return status;
         }
+        if ((status = ReadPacket(numBytes)) != 0) {
+            return status;
+        }
+          /*  datareceived = false;
 
-        /*success by default*/
-        status = 0x00;
-        if(usbdata[0] == 0x62)
-        {
+            /*wait while the data is received*/
+            /*FIXME, may be create a thread to wait on , but any
+             * way has to wait in while loop
+             */
+            /*long start = SystemClock.currentThreadTimeMillis();
+            while(!datareceived && (SystemClock.currentThreadTimeMillis() - start)<10000){
+                Log.d("SPI", "Writing");
+                }
+        } while(!datareceived);*/
+
+        //status = 0x01;
+        if(usbdata[0] != 0x62) {
+            return 0x06;
+        }
             /*copy the received data into the buffer*/
-            for(int count=0;count<(readcount-1);count++){
-                buffer[count] = usbdata[count+1];
-            }
-            /*update the received length*/
-            numReadBytes[0] = (byte)(readcount-1);
-        }
+        System.arraycopy(usbdata, 1, buffer, 0, readcount - 1);
+        /*update the received length*/
         /*read the next usb data*/
-        datareceived = false;
+        //datareceived = false;
         return status;
     }
 
 
     /*read data*/
-    public byte ReadData(byte numBytes, byte[] buffer, byte [] numReadBytes)
+    synchronized int ReadData(byte numBytes, byte[] buffer)
     {
-
-        status = 0x00; /*error by default*/
+        int status;
         /*
          * if num bytes are more than maximum limit
          */
         if(numBytes < 1){
             /*return the status with the error in the command*/
-            return status;
+            return 0x01;
         }
 
         /*check for maximum limit*/
         if(numBytes > maxnumbytes){
-            numBytes = maxnumbytes;
+            return 0x02;
         }
 
         /*prepare the packet to be sent*/
-        for(int count = 0;count<numBytes;count++)
-        {
-            writeusbdata[count+1] = buffer[count];
-        }
+        System.arraycopy(buffer, 0, writeusbdata, 1, numBytes);
 
         /*prepare the usbpacket*/
         writeusbdata[0] = (byte) 0x63;
-        SendPacket((int)(numBytes+1));
-
-        datareceived = false;
-        /*wait while the data is received*/
-        /*FIXME, may be create a thread to wait on , but any
-         * way has to wait in while loop
-         */
-        while(true){
-            Log.d("SPI", "Reading");
-
-            if(datareceived == true){
-
-                break;
-            }
+        //do {
+        if ((status = SendPacket(numBytes + 1)) != 0) {
+            return status;
         }
+        if ((status = ReadPacket(numBytes+1)) != 0) {
+            return status;
+        }
+            /*datareceived = false;
+            /*wait while the data is received*/
+            /*FIXME, may be create a thread to wait on , but any
+             * way has to wait in while loop
+             */
+            /*long start = SystemClock.currentThreadTimeMillis();
+            while (!datareceived && (SystemClock.currentThreadTimeMillis() - start) < 10000) {
+                Log.d("SPI", "Reading");
+            }
+        } while(!datareceived);*/
 
         /*success by default*/
-        status = 0x00;
-        if(usbdata[0] ==  0x63)
-        {
-            /*copy the received data into the buffer*/
-            for(int count=0;count<(readcount-1);count++){
-
-                buffer[count] = usbdata[count+1];
-            }
-
-            /*update the received length*/
-            numReadBytes[0] = (byte)(readcount-1);
-            /*read the next usb data*/
-            datareceived = false;
+        if(usbdata[0] !=  0x63) {
+            return 0x06;
         }
+            /*copy the received data into the buffer*/
+        System.arraycopy(usbdata, 1, buffer, 0, readcount - 1);
+
+        /*update the received length*/
+        /*read the next usb data*/
+        //datareceived = false;
+
         return status;
     }
 
+    synchronized private int ReadPacket(int numBytes) {
+        readcount = 0;
+        int status = 0x00;
+        while(readcount < numBytes) {
+            try {
+                readcount += inputstream.read(usbdata, readcount, numBytes - readcount);
+            } catch (IOException e) {
+                e.printStackTrace();
+                status = 0x05;
+            }
+        }
+        return status;
+    }
     /*method to send on USB*/
-    private void SendPacket(int numBytes)
+
+    synchronized private int SendPacket(int numBytes)
     {
 
-
+        int status = 0x03;
         try {
             if(outputstream != null){
                 outputstream.write(writeusbdata, 0,numBytes);
+                status = 0x00;
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
+            status = 0x04;
             e.printStackTrace();
         }
+        return status;
 
     }
 
     /*resume accessory*/
-    public void ResumeAccessory()
+    void ResumeAccessory()
     {
+        /*int i = 0;
+        HashMap<String, UsbDevice> deviceList = usbmanager.getDeviceList();
+        boolean empty = deviceList.isEmpty();
+        UsbAccessory[] accessories = usbmanager.getAccessoryList();
+        boolean aempty = (accessories.length == 0);
+        ++i;*/
         // Intent intent = getIntent();
         if (inputstream != null && outputstream != null) {
             return;
@@ -247,32 +258,30 @@ public class FT311SPIMasterInterface extends Activity
         }
         else
         {
-            accessory_attached = false;
             return;
         }
 
-        UsbAccessory accessory = (accessories == null ? null : accessories[0]);
+        UsbAccessory accessory = accessories[0];
         if (accessory != null) {
-            if( -1 == accessory.toString().indexOf(ManufacturerString))
+            if(!ManufacturerString.equals(accessory.getManufacturer()))
             {
                 Toast.makeText(global_context, "Manufacturer is not matched!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if( -1 == accessory.toString().indexOf(ModelString))
+                if(!ModelString.equals(accessory.getModel()))
             {
                 Toast.makeText(global_context, "Model is not matched!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if( -1 == accessory.toString().indexOf(VersionString))
+            if(!VersionString.equals(accessory.getVersion()))
             {
                 Toast.makeText(global_context, "Version is not matched!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             Toast.makeText(global_context, "Manufacturer, Model & Version are matched!", Toast.LENGTH_SHORT).show();
-            accessory_attached = true;
 
             if (usbmanager.hasPermission(accessory)) {
                 OpenAccessory(accessory);
@@ -288,22 +297,22 @@ public class FT311SPIMasterInterface extends Activity
                     }
                 }
             }
-        } else {}
+        }
 
     }
 
     /*destroy accessory*/
-    public void DestroyAccessory(){
+    void DestroyAccessory(){
         global_context.unregisterReceiver(mUsbReceiver);
-        if(accessory_attached == true)
+        /*if(accessory_attached)
         {
-            READ_ENABLE = false;  // set false condition for handler_thread to exit waiting data loop
-            byte [] tmpnRBytes = {0};
+            //READ_ENABLE = false;  // set false condition for handler_thread to exit waiting data loop
+            //byte [] tmpnRBytes = {0};
             byte [] temp2 = new byte[64];
-            ReadData((byte)3,temp2, tmpnRBytes); // send dummy data for instream.read going
+            ReadData((byte)3,temp2); // send dummy data for instream.read going
             try{Thread.sleep(10);}
             catch(Exception e){}
-        }
+        }*/
         CloseAccessory();
     }
 
@@ -311,22 +320,17 @@ public class FT311SPIMasterInterface extends Activity
 
     /*********************helper routines*************************************************/
 
-    public void OpenAccessory(UsbAccessory accessory)
+    private void OpenAccessory(UsbAccessory accessory)
     {
         filedescriptor = usbmanager.openAccessory(accessory);
         if(filedescriptor != null){
-            usbaccessory = accessory;
             FileDescriptor fd = filedescriptor.getFileDescriptor();
             inputstream = new FileInputStream(fd);
             outputstream = new FileOutputStream(fd);
-            /*check if any of them are null*/
-            if(inputstream == null || outputstream==null){
-                return;
-            }
         }
 
-        handlerThread = new handler_thread(inputstream);
-        handlerThread.start();
+        //handlerThread = new handler_thread(inputstream);
+        //handlerThread.start();
     }
 
     private void CloseAccessory()
@@ -335,18 +339,18 @@ public class FT311SPIMasterInterface extends Activity
             if(filedescriptor != null)
                 filedescriptor.close();
 
-        }catch (IOException e){}
+        }catch (IOException ignored){}
 
         try {
             if(inputstream != null)
                 inputstream.close();
-        } catch(IOException e){}
+        } catch(IOException ignored){}
 
         try {
             if(outputstream != null)
                 outputstream.close();
 
-        }catch(IOException e){}
+        }catch(IOException ignored){}
         /*FIXME, add the notfication also to close the application*/
 
         filedescriptor = null;
@@ -369,7 +373,7 @@ public class FT311SPIMasterInterface extends Activity
             {
                 synchronized (this)
                 {
-                    UsbAccessory accessory = (UsbAccessory) intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
+                    UsbAccessory accessory = intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false))
                     {
                         Toast.makeText(global_context, "Allow USB Permission", Toast.LENGTH_SHORT).show();
@@ -399,7 +403,7 @@ public class FT311SPIMasterInterface extends Activity
 
 
     /*usb input data handler*/
-    private class handler_thread  extends Thread {
+    /*private class handler_thread  extends Thread {
         FileInputStream instream;
 
         handler_thread(FileInputStream stream ){
@@ -414,18 +418,18 @@ public class FT311SPIMasterInterface extends Activity
 
                 try
                 {
-                    /*dont overwrite the previous buffer*/
+                    *//*dont overwrite the previous buffer*//*
                     if((instream != null) && (datareceived==false))
                     {
                         readcount = instream.read(usbdata,0,64);
                         if(readcount > 0)
                         {
                             datareceived = true;
-                            /*send only when you find something*/
+                            *//*send only when you find something*//*
                         }
                     }
                 }catch (IOException e){}
             }
         }
-    }
+    }*/
 }
