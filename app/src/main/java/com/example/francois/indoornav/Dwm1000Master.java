@@ -77,8 +77,8 @@ class Dwm1000Master extends Dwm1000 {
                             state = State.POLL_INIT;
                             if (receiveFrameUwb()[0] == messages.slaveResponse[0]) {
                                 caseImIn = 10;
-                                sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
                                 clockTime[3] = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
+                                sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
                                 state = State.WAIT_FINAL_SEND;
                             }
                             break;
@@ -137,7 +137,7 @@ class Dwm1000Master extends Dwm1000 {
     }
 
     private double[] compute_distances(long[] allClockTime) {
-        long tRoundMaster, tRoundSlave, tReplyMaster, tReplySlave;
+        double tRoundMaster, tRoundSlave, tReplyMaster, tReplySlave;
         double tof;
         double distance;
         long[] clockTime = new long[6];
@@ -152,13 +152,13 @@ class Dwm1000Master extends Dwm1000 {
                 tof = (tRoundMaster * tRoundSlave - tReplyMaster * tReplySlave) * TIME_UNIT /
                         (tRoundMaster + tRoundSlave + tReplyMaster + tReplySlave);
                 double distanceMeasured = tof * 299792458;
-                distance = correctivePol[0];
+                distance = distanceMeasured;
+                /*distance = correctivePol[0];
                 for(int j = 1; j < 4; ++j) {
                     distance = distance * distanceMeasured + correctivePol[j];
-                }
-                if (distance < 100) {
+                }*/
+                //if (distance < 100) {
                     distancemm[i] = distance * 1000;
-                }
             //}
             //TODO
         }

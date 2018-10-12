@@ -88,15 +88,13 @@ abstract class Dwm1000 {
         }
 
         // SYS_CFG: system configuration (configure receiver)
-        byte[] sysCfg = new byte[2];
-        sysCfg[0] = (byte)(1<<RXM110K); // set RXM110K bit
-        sysCfg[1] = (byte)0x00; //(byte)(1<<RXAUTR); // set RXAUTR: Receiver auto-re-enable
-        // CANNOT USE RXAUTR while expecting correct RX timestamp
-        writeDataSpi(SYS_CFG, (byte)0x02, sysCfg, (byte)0x02);
+        byte[] sysCfg;
 
         // CHAN_CTRL: Configure channel control
         byte[] chanCtrl = new byte[] {(byte) (1<<RXPRF)}; // Set RXPRF to 01
         writeDataSpi(CHAN_CTRL, (byte)0x02, chanCtrl, (byte)0x01);
+
+
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -140,8 +138,8 @@ abstract class Dwm1000 {
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        // TX_FCTRL: Transmit frame control & TXBR 110 kbps
-        byte[] tx_fctrl = new byte[] {(byte)(1<<TR)};
+        // TX_FCTRL: Transmit frame control
+        byte[] tx_fctrl = new byte[] {(byte)0xC0};
         writeDataSpi(TX_FCTRL, (byte)0x01, tx_fctrl, (byte)0x01);
 
         // RX_FWTO: setup Rx Timeout 5ms and set RXWTOE bit
@@ -156,8 +154,8 @@ abstract class Dwm1000 {
         // ...
 
         // TX_ANTD: Set the Tx antenna delay
-        byte[] antennaDelay = {(byte)ANTENNA_DELAY, (byte)(ANTENNA_DELAY>>8)};
-        writeDataSpi(TX_ANTD, antennaDelay, (byte)0x02);
+        //byte[] antennaDelay = {(byte)ANTENNA_DELAY, (byte)(ANTENNA_DELAY>>8)};
+        //writeDataSpi(TX_ANTD, antennaDelay, (byte)0x02);
 
         // End of initialization function
         return true;
