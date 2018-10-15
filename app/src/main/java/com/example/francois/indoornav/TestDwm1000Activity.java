@@ -92,7 +92,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
     // Button to explore DWM1000 Environment
     public void trackingSwitch(View view) {
 
-        if(((Switch)view).isChecked()) {
+        if(trackingSwitch.isChecked()) {
             switch (mytask.getStatus()) {
                 case PENDING:
                     mytask.execute();
