@@ -22,9 +22,9 @@ abstract class Dwm1000 {
     private static final byte SYS_CTRL   = (byte)0x0D;
     private static final byte SYS_MASK   = (byte)0x0E;
     private static final byte SYS_STATUS = (byte)0x0F;
-    private static final byte RX_FINFO   = (byte)0x10;
+            static final byte RX_FINFO   = (byte)0x10;
     private static final byte RX_BUFFER  = (byte)0x11;
-    private static final byte RX_FQUAL   = (byte)0x12;
+            static final byte RX_FQUAL   = (byte)0x12;
     private static final byte RX_TTCKI   = (byte)0x13;
     private static final byte RX_TTCKO   = (byte)0x14;
             static final byte RX_TIME    = (byte)0x15;
@@ -40,7 +40,7 @@ abstract class Dwm1000 {
     private static final byte EXT_SYNC   = (byte)0x24;
     private static final byte ACC_MEM    = (byte)0x25;
     private static final byte GPIO_CTRL  = (byte)0x26;
-    private static final byte DRX_CONF   = (byte)0x27;
+    static final byte DRX_CONF   = (byte)0x27;
     private static final byte RF_CONF    = (byte)0x28;
     private static final byte TX_CAL     = (byte)0x2A;
     private static final byte FS_CTRL    = (byte)0x2B;

@@ -39,4 +39,14 @@
         android:onClick="startTestDwm1000"
         android:text="Test DWM1000" />
 
+    <Button
+        android:id="@+id/button6"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="212dp"
+        android:onClick="startCalibration"
+        android:text="Calibration" />
+
 </RelativeLayout >
