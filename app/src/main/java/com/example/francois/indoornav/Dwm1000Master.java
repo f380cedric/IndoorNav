@@ -3,6 +3,8 @@ package com.example.francois.indoornav;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.ftdi.j2xx.interfaces.SpiMaster;
+
 import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
@@ -24,7 +26,7 @@ class Dwm1000Master extends Dwm1000 {
 
 
 
-    Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
+    Dwm1000Master(SpiMaster my_spimInterface) {
         super(my_spimInterface);
 
         for(int i = 0; i < numberSlaves; ++i) {

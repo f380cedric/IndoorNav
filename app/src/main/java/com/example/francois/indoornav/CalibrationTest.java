@@ -22,7 +22,7 @@ public class CalibrationTest extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_test);
-        spimInterface = new FT311SPIMasterInterface(this);
+        /*spimInterface = new FT311SPIMasterInterface(this);
         dwm1000 = new Dwm1000Master(spimInterface);
         prf_spinner = findViewById(R.id.prf_spinner);
         sfd_spinner = findViewById(R.id.sfd_spinner);
@@ -73,6 +73,6 @@ public class CalibrationTest extends AppCompatActivity {
     protected void onDestroy() {
         spimInterface.DestroyAccessory();
         super.onDestroy();
-    }
+*/    }
 
 }

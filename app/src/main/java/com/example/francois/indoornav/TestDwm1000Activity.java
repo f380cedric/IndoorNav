@@ -8,11 +8,20 @@ import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.ftdi.j2xx.D2xxManager;
+import com.ftdi.j2xx.FT_Device;
+import com.ftdi.j2xx.ft4222.FT_4222_Defines;
+import com.ftdi.j2xx.ft4222.FT_4222_Device;
+import com.ftdi.j2xx.ft4222.FT_4222_Spi_Master;
+import com.ftdi.j2xx.interfaces.SpiMaster;
+
 import java.text.DecimalFormat;
+import java.util.Arrays;
+
 
 public class TestDwm1000Activity extends AppCompatActivity {
 
-    private FT311SPIMasterInterface spimInterface;
+    private SpiMaster spimInterface;
     private Dwm1000Master dwm1000;
     private TextView textDWM1000ID;
     private TextView textTestBox;
@@ -62,7 +71,26 @@ public class TestDwm1000Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_dwm1000);
 
-        spimInterface = new FT311SPIMasterInterface(this);
+        try {
+            D2xxManager manager = D2xxManager.getInstance(this);
+            int numdev;
+            do {
+                numdev = manager.createDeviceInfoList(this);
+            } while(numdev < 1);
+            FT_4222_Device ftdev = new FT_4222_Device(manager.openByIndex(this, 0));
+            int status = ftdev.init();
+            status = ftdev.setClock((byte) FT_4222_Defines.FT4222_ClockRate.SYS_CLK_24);
+            spimInterface = ftdev.getSpiMasterDevice();
+            status = spimInterface.init(FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE,
+                    FT_4222_Defines.FT4222_SPIClock.CLK_DIV_8,
+                    FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW,
+                    FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING, (byte)1);
+            status = ((FT_4222_Spi_Master)spimInterface).setDrivingStrength(FT_4222_Defines.SPI_DrivingStrength.DS_4MA,
+                    FT_4222_Defines.SPI_DrivingStrength.DS_12MA, FT_4222_Defines.SPI_DrivingStrength.DS_4MA);
+            int a = 0;
+        } catch (D2xxManager.D2xxException e) {
+            e.printStackTrace();
+        }
         dwm1000 = new Dwm1000Master(spimInterface);
         mytask = new Location();
 
@@ -133,11 +161,18 @@ public class TestDwm1000Activity extends AppCompatActivity {
 
     // Convert 5-element byte array to int
 
-
     @Override
     protected void onResume() {
         super.onResume();
-        spimInterface.ResumeAccessory();
+        byte[] read = new byte[5];
+        byte[] write = new byte[5];
+        write[0] = (byte)0x04;
+        write[1] = (byte)0xF0;
+        write[2] = (byte)0xFF;
+        write[3] = (byte)0x0F;
+        write[4] = (byte)0xAA;
+        int stat = spimInterface.singleReadWrite(read,write, 5, new int[1], true);
+        int stat2 = spimInterface.singleReadWrite(read,write, 5, new int[1], true);
     }
 
     @Override
@@ -148,7 +183,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         mytask.cancel(true);
-        spimInterface.DestroyAccessory();
+        //spimInterface.DestroyAccessory();
         super.onDestroy();
     }
 

@@ -1,5 +1,8 @@
 package com.example.francois.indoornav;
 
+import com.ftdi.j2xx.ft4222.FT_4222_Defines;
+import com.ftdi.j2xx.interfaces.SpiMaster;
+
 import java.util.Arrays;
 import static android.os.SystemClock.sleep;
 
@@ -70,10 +73,10 @@ abstract class Dwm1000 {
     private static final int RX_MUST_CLEAR      = 0x60000;
 
 
-    private final FT311SPIMasterInterface spimInterface;
+    private final SpiMaster spimInterface;
 
     // Constructor
-    Dwm1000(FT311SPIMasterInterface my_spimInterface){
+    Dwm1000(SpiMaster my_spimInterface){
         spimInterface = my_spimInterface;
     }
 
@@ -92,7 +95,7 @@ abstract class Dwm1000 {
 
         // CHAN_CTRL: Configure channel control
         byte[] chanCtrl = new byte[] {(byte) (1<<RXPRF)}; // Set RXPRF to 01
-        writeDataSpi(CHAN_CTRL, (byte)0x02, chanCtrl, (byte)0x01);
+        writeDataSpi(CHAN_CTRL, (byte)0x02, chanCtrl, 0x01);
 
 
 
@@ -101,61 +104,61 @@ abstract class Dwm1000 {
         // DEFAULT CONFIGURATIONS THAT SHOULD BE MODIFIED (SECTION 2.5.5 OF USER MANUAL)
         // AGC_TUNE1
         byte[] agc_tune1 = {(byte)0x70, (byte)0x88};
-        writeDataSpi(AGC_CTRL, (byte)0x04, agc_tune1, (byte)0x02);
+        writeDataSpi(AGC_CTRL, (byte)0x04, agc_tune1, 0x02);
 
         // AGC_TUNE2
         byte[] agc_tune2 = {(byte)0x07, (byte)0xa9, (byte)0x02, (byte)0x25};
-        writeDataSpi(AGC_CTRL, (byte)0x0c, agc_tune2, (byte)0x04);
+        writeDataSpi(AGC_CTRL, (byte)0x0c, agc_tune2, 0x04);
 
         // DRX_TUNE2
         byte[] drx_tune2 = {(byte)0x2d, (byte)0x00, (byte)0x1a, (byte)0x31};
-        writeDataSpi(DRX_CONF, (byte)0x08, drx_tune2, (byte)0x04);
+        writeDataSpi(DRX_CONF, (byte)0x08, drx_tune2, 0x04);
 
         // LDE_CFG1: NTM
         byte[] lde_cfg1 = {(byte)0x6d};
-        writeDataSpi(LDE_CTRL, (short)0x0806, lde_cfg1, (byte)0x01);
+        writeDataSpi(LDE_CTRL, (short)0x0806, lde_cfg1, 0x01);
 
         // LDE_CFG2
         byte[] lde_cfg2 = {(byte)0x07, (byte)0x16};
-        writeDataSpi(LDE_CTRL, (short) 0x1806, lde_cfg2, (byte)0x02);
+        writeDataSpi(LDE_CTRL, (short) 0x1806, lde_cfg2, 0x02);
 
         // TX_POWER
         byte[] tx_power = {(byte)0x48, (byte)0x28, (byte)0x08, (byte)0x0e};
-        writeDataSpi(TX_POWER, tx_power, (byte)0x04);
+        writeDataSpi(TX_POWER, tx_power, 0x04);
 
         // RF_TXCTRL
         byte[] rf_txctrl = {(byte)0xe0, (byte)0x3f, (byte)0x1e};
-        writeDataSpi(RF_CONF, (byte)0x0c, rf_txctrl, (byte)0x03);
+        writeDataSpi(RF_CONF, (byte)0x0c, rf_txctrl, 0x03);
 
         // TC_PGDELAY
         byte[] tc_pgdelay = {(byte)0xc0};
-        writeDataSpi(TX_CAL, (byte)0x0b, tc_pgdelay, (byte)0x01);
+        writeDataSpi(TX_CAL, (byte)0x0b, tc_pgdelay, 0x01);
 
         // FS_PLLTUNE
         byte[] fs_plltune = {(byte)0xbe};
-        writeDataSpi(FS_CTRL, (byte)0x0b, fs_plltune, (byte)0x01);
+        writeDataSpi(FS_CTRL, (byte)0x0b, fs_plltune, 0x01);
 
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
         // TX_FCTRL: Transmit frame control
         byte[] tx_fctrl = new byte[] {(byte)0xC0};
-        writeDataSpi(TX_FCTRL, (byte)0x01, tx_fctrl, (byte)0x01);
+        writeDataSpi(TX_FCTRL, (byte)0x01, tx_fctrl, 0x01);
 
         // RX_FWTO: setup Rx Timeout 5ms and set RXWTOE bit
         byte[] timeout = {(byte)0x88, (byte)0x13};
-        writeDataSpi(RX_FWTO, timeout, (byte)0x02);
+        writeDataSpi(RX_FWTO, timeout, 0x02);
 
-        sysCfg = readDataSpi(SYS_CFG, (byte) 0x03, (byte)0x01);
+        sysCfg = readDataSpi(SYS_CFG, (byte) 0x03, 0x01);
         sysCfg[0] |= (1<<RXWTOE);
-        writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, (byte)0x01);
+        writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, 0x01);
 
         // No setup of IRQ (unlike in Quentin's code)
         // ...
 
         // TX_ANTD: Set the Tx antenna delay
         //byte[] antennaDelay = {(byte)ANTENNA_DELAY, (byte)(ANTENNA_DELAY>>8)};
-        //writeDataSpi(TX_ANTD, antennaDelay, (byte)0x02);
+        //writeDataSpi(TX_ANTD, antennaDelay, 0x02);
 
         // End of initialization function
         return true;
@@ -163,27 +166,27 @@ abstract class Dwm1000 {
 
     // Read DWM1000 device ID
     byte[] readDeviceId(){
-        byte dataLength = (byte)DEV_ID_THEOR.length;
-        return readDataSpi(DEV_ID,dataLength);
+        int dataLength = DEV_ID_THEOR.length;
+        return readDataSpi(DEV_ID, dataLength);
     }
 
     // Send frame over UWB channel
-    void sendFrameUwb(byte[] frame, byte frameLength){
+    void sendFrameUwb(byte[] frame, int frameLength){
         // maximum payload length is 125 bytes
         // TX_BUFFER: write data into tx buffer
         writeDataSpi(TX_BUFFER, frame, frameLength);
 
         // TX_FCTRL: set TFLEN bits to specify length of payload
         byte [] tx_fctrl = new byte[] {(byte)(frameLength+0x02)}; // +2 bytes for CRC
-        writeDataSpi(TX_FCTRL, tx_fctrl, (byte)0x01);
+        writeDataSpi(TX_FCTRL, tx_fctrl, 0x01);
 
         // SYS_CTRL: Prepare transmission of a packet
-        byte[] sys_ctrl = readDataSpi(SYS_CTRL, (byte)0x01);
+        byte[] sys_ctrl = readDataSpi(SYS_CTRL, 0x01);
 
         sys_ctrl[0] |= (1<<TXSTRT); // set TXSTRT bit to start transmission
         //sys_ctrl[0] &= ~(1<<TRXOFF); // clear TRXOFF bit to remove force idle mode
         sys_ctrl[0] |= (1<<WAIT4RESP); // set WAIT4RESP bit to wait for response
-        writeDataSpi(SYS_CTRL,sys_ctrl, (byte)0x01);
+        writeDataSpi(SYS_CTRL,sys_ctrl, 0x01);
     }
 
     //
@@ -195,16 +198,16 @@ abstract class Dwm1000 {
      */
     int checkForFrameUwb() {
         byte address;
-        byte dataLength;
+        int dataLength;
         int result = 3;
         // SYS_STATUS: check for RX error or timeout
         address = SYS_STATUS;
-        dataLength = (byte) 0x04;
+        dataLength = 0x04;
         int sys_status = byteArray4ToInt(readDataSpi(address, dataLength));
         if ((sys_status & RX_ERROR_MASK) != 0) {
             result = 2;
             if ((sys_status & RX_MUST_CLEAR) != 0) {
-                writeDataSpi(address, (byte)0x02, new byte[] {(byte)0x06}, (byte)0x01);
+                writeDataSpi(address, (byte)0x02, new byte[] {(byte)0x06}, 0x01);
             }
             if ((sys_status & RX_RESET_MASK) != 0) {
                 resetRx();
@@ -222,14 +225,14 @@ abstract class Dwm1000 {
     }
 
     boolean checkFrameSent(){
-        return (readDataSpi(SYS_STATUS, (byte) 0x01)[0] & (1 << TXFRS)) == (1 << TXFRS);
+        return (readDataSpi(SYS_STATUS, 0x01)[0] & (1 << TXFRS)) == (1 << TXFRS);
     }
 
     // Read frame received over UWB channel - user code should use checkForFrameUwb() before calling this function
     byte[] receiveFrameUwb(){
         // RX_FINFO: Get frame length
-        byte[] rx_finfo = readDataSpi(RX_FINFO, (byte)0x01);
-        byte frameLength = (byte)((rx_finfo[0]&~(1<<7))-0x02); // -2 bytes for CRC
+        byte[] rx_finfo = readDataSpi(RX_FINFO, 0x01);
+        int frameLength = ((rx_finfo[0]&~(1<<7))-0x02); // -2 bytes for CRC
 
         // RX_BUFFER: Read received frame
         return readDataSpi(RX_BUFFER, frameLength);
@@ -238,7 +241,7 @@ abstract class Dwm1000 {
     // Disable tranceiver (force idle)
     void idle(){
         byte[] sys_ctrl = new byte[] {(byte)(1<<TRXOFF)};
-        writeDataSpi(SYS_CTRL,sys_ctrl,(byte)0x01);
+        writeDataSpi(SYS_CTRL,sys_ctrl,0x01);
     }
     // Disable UWB Rx
     /*void disableUwbRx(){
@@ -255,97 +258,92 @@ abstract class Dwm1000 {
     private void enableUwbRx(){
         // SYS_CTRL: Prepare transmission of a packet
         byte[] sys_ctrl = new byte[] {(byte)0x01}; // set RXENAB bit to start receiving
-        writeDataSpi(SYS_CTRL, (byte)0x01,sys_ctrl, (byte)0x01);
+        writeDataSpi(SYS_CTRL, (byte)0x01,sys_ctrl, 0x01);
     }
 
 
     // Read from SPI
     //  1-octet
-    byte[] readDataSpi(byte address, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
+    byte[] readDataSpi(byte address, int dataLength){
+        byte[] readBuffer = new byte[++dataLength];
+        byte[] writeBuffer = new byte[dataLength];
 
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = address;
-        ++numBytes;
+        writeBuffer[0] = address;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 1, numBytes);
+        int res = spimInterface.singleReadWrite(readBuffer, writeBuffer, dataLength, new int[1], true);
+        return readBuffer;
     }
     //  2-octet
-    private byte[] readDataSpi(byte address, byte offset, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
-
+    private byte[] readDataSpi(byte address, byte offset, int dataLength){
+        int length = dataLength + 2;
+        byte[] readBuffer = new byte[length];
+        byte[] writeBuffer = new byte[length];
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x40);
-        readWriteBuffer[1] = offset;
-        numBytes += 2;
+        writeBuffer[0] = (byte)(address | 0x40);
+        writeBuffer[1] = offset;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 2, numBytes);
+        spimInterface.singleReadWrite(readBuffer, writeBuffer, length, new int[1], true);
+        return Arrays.copyOfRange(readBuffer, 2, dataLength+2);
     }
     //  3-octet
-    byte[] readDataSpi(byte address, short offset, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
+    byte[] readDataSpi(byte address, short offset, int dataLength){
+        int length = dataLength + 3;
+
+        byte[] readBuffer = new byte[length];
+        byte[] writeBuffer = new byte[length];
 
         // Prepare readWriteBuffer for SPI transaction
 
-        readWriteBuffer[0] = (byte)(address | 0x40);
-        readWriteBuffer[1] = (byte)(offset | 0x80);
-        readWriteBuffer[2] = (byte)(offset >> 7);
-        numBytes += 3;
+        writeBuffer[0] = (byte)(address | 0x40);
+        writeBuffer[1] = (byte)(offset | 0x80);
+        writeBuffer[2] = (byte)(offset >> 7);
 
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 3, numBytes);
+        spimInterface.singleReadWrite(readBuffer, writeBuffer, length, new int[1], true);
+        return Arrays.copyOfRange(readBuffer, 3, dataLength+3);
     }
 
     // Write to SPI
     //  1-octet
-    private void writeDataSpi(byte address, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
+    private void writeDataSpi(byte address, byte[] data, int dataLength){
+        int length = dataLength + 1;
 
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x80);
-        ++numBytes;
+        byte[] writeBuffer = new byte[length];
+        writeBuffer[0] = (byte)(address | 0x80);
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
+        System.arraycopy(data, 0, writeBuffer, 1, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        spimInterface.singleWrite(writeBuffer, length, new int[1], true);
     }
     //  2-octet
-    private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
+    private void writeDataSpi(byte address, byte offset, byte[] data, int dataLength){
+        int length = dataLength + 2;
+        byte[] writeBuffer = new byte[length];
 
         // Prepare readWriteBuffer for SPI transaction
 
-        readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
-        readWriteBuffer[1] = offset;
-        numBytes += 2;
+        writeBuffer[0] = (byte)(address | 0x80 | 0x40);
+        writeBuffer[1] = offset;
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
+        System.arraycopy(data, 0, writeBuffer, 2, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        spimInterface.singleWrite(writeBuffer, length, new int[1], true);
     }
     //  3-octet
-    private void writeDataSpi(byte address, short offset, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
-        byte numBytes = dataLength;
-
+    private void writeDataSpi(byte address, short offset, byte[] data, int dataLength){
+        int length = dataLength + 3;
+        byte[] writeBuffer = new byte[length];
         // Prepare readWriteBuffer for SPI transaction
 
-        readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
-        readWriteBuffer[1] = (byte)(offset | 0x80);
-        readWriteBuffer[2] = (byte)(offset >> 7);
-        numBytes += 3;
+        writeBuffer[0] = (byte)(address | 0x80 | 0x40);
+        writeBuffer[1] = (byte)(offset | 0x80);
+        writeBuffer[2] = (byte)(offset >> 7);
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
+        System.arraycopy(data, 0, writeBuffer, 3, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        spimInterface.singleWrite(writeBuffer, length, new int[1], true);
     }
 
 
@@ -357,7 +355,7 @@ abstract class Dwm1000 {
         // Write to PMSC_CTRL0 register
         byte address    = PMSC;
         byte offset   = (byte)0x00;
-        byte dataLength = (byte)0x01;
+        int dataLength = 0x01;
         byte[] pmsc_ctrl0 = new byte[1];
         // Set SYSCLKS bits to 01 (other 6 bits can be cleared)
         pmsc_ctrl0[0] = (byte) 0x01;
@@ -382,32 +380,32 @@ abstract class Dwm1000 {
         // Write to PMSC_CTRL0 register: set LSBs to 0x0301
         address     = PMSC;
         offset   = (byte)0x00;
-        dataLength  = (byte)0x02;
+        dataLength  = 0x02;
         pmsc_ctrl0 = new byte[] {(byte) 0x01, (byte) 0x03};
         writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
         sleep(1);
         // OTP_CTRL: set LDELOAD bit to 1
         address     = OTP_IF;
         offset   = (byte)0x06;
-        dataLength  = (byte)0x02;
+        dataLength  = 0x02;
         byte[] otp_ctrl = {(byte)0x00, (byte)0x80};
         writeDataSpi(address, offset, otp_ctrl, dataLength);
         sleep(10);
         // Reset SYSCLKS bits to 00
         address     = PMSC;
         offset   = (byte)0x00;
-        dataLength  = (byte)0x02;
+        dataLength  = 0x02;
         pmsc_ctrl0[0] = (byte)0x00;
         pmsc_ctrl0[1] = (byte)0x02;
         writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
         sleep(10);
-        maxSpeedFT311();
+        //maxSpeedFT311();
     }
 
     private void resetRx(){
         byte address    = PMSC;
         byte offset   = (byte)0x03;
-        byte dataLength = (byte)0x01;
+        int dataLength = 0x01;
         byte[] pmsc_ctrl0 = new byte[1];
         // Clear SOFTRESET bits
 
@@ -424,18 +422,18 @@ abstract class Dwm1000 {
 
     // Reset FT311 parameters for SPI-M interface
     private void resetFT311(){
-        spimInterface.Reset();
+        spimInterface.reset();
         // Set SPI interface parameters
-        byte clockPhaseMode      = (byte) 0x00;
-        byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 3000000;
-        spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
+        spimInterface.init(FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE,
+                FT_4222_Defines.FT4222_SPIClock.CLK_DIV_8,
+                FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW,
+                FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING, (byte)1);
     }
     private void maxSpeedFT311(){
-        byte clockPhaseMode      = (byte) 0x00;
-        byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 18000000;
-        spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
+        spimInterface.init(FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE,
+                FT_4222_Defines.FT4222_SPIClock.CLK_DIV_2,
+                FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW,
+                FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING, (byte)1); // 12 MHz
     }
 
     private static int byteArray4ToInt(byte[] bytes){
