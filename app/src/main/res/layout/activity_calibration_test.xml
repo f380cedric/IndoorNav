@@ -98,6 +98,64 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
+        android:text="received power"
         app:layout_constraintBaseline_toBaselineOf="@+id/getPower_button"
         app:layout_constraintStart_toEndOf="@+id/getPower_button" />
+
+    <Button
+        android:id="@+id/calibration_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:onClick="calibrate"
+        android:text="Calibrate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/antenna_delay" />
+
+    <TextView
+        android:id="@+id/distance_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="average distance"
+        app:layout_constraintBaseline_toBaselineOf="@+id/calibration_button"
+        app:layout_constraintStart_toEndOf="@+id/calibration_button" />
+
+    <EditText
+        android:id="@+id/antenna_delay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="number"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/getPower_button" />
+
+    <Button
+        android:id="@+id/distance30_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="8dp"
+        android:onClick="calibrate30"
+        android:text="Button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/calibration_button" />
+
+    <TextView
+        android:id="@+id/distance30_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="TextView"
+        app:layout_constraintBaseline_toBaselineOf="@+id/distance30_button"
+        app:layout_constraintStart_toEndOf="@+id/distance30_button" />
+
 </android.support.constraint.ConstraintLayout>

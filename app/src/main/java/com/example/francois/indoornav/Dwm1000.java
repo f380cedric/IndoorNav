@@ -30,7 +30,7 @@ abstract class Dwm1000 {
     private static final byte RX_TTCKO   = (byte)0x14;
             static final byte RX_TIME    = (byte)0x15;
             static final byte TX_TIME    = (byte)0x17;
-    private static final byte TX_ANTD    = (byte)0x18;
+    static final byte TX_ANTD    = (byte)0x18;
     private static final byte SYS_STATE  = (byte)0x19;
     private static final byte ACK_RESP_T = (byte)0x1A;
     private static final byte RX_SNIFF   = (byte)0x1D;
@@ -47,7 +47,7 @@ abstract class Dwm1000 {
     private static final byte FS_CTRL    = (byte)0x2B;
     private static final byte AON        = (byte)0x2C;
     private static final byte OTP_IF     = (byte)0x2D;
-    private static final byte LDE_CTRL   = (byte)0x2E;
+    static final byte LDE_CTRL   = (byte)0x2E;
     private static final byte DIG_DIAG   = (byte)0x2F;
     private static final byte PMSC       = (byte)0x36;
 
@@ -305,7 +305,7 @@ abstract class Dwm1000 {
 
     // Write to SPI
     //  1-octet
-    private void writeDataSpi(byte address, byte[] data, byte dataLength){
+    void writeDataSpi(byte address, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
         byte numBytes = dataLength;
 
@@ -318,7 +318,7 @@ abstract class Dwm1000 {
         spimInterface.SendData(numBytes, readWriteBuffer);
     }
     //  2-octet
-    private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength){
+    void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
         byte numBytes = dataLength;
 
@@ -333,7 +333,7 @@ abstract class Dwm1000 {
         spimInterface.SendData(numBytes, readWriteBuffer);
     }
     //  3-octet
-    private void writeDataSpi(byte address, short offset, byte[] data, byte dataLength){
+    void writeDataSpi(byte address, short offset, byte[] data, byte dataLength){
         byte[] readWriteBuffer = new byte[64];
         byte numBytes = dataLength;
 
