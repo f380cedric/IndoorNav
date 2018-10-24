@@ -7,6 +7,7 @@ abstract class Dwm1000 {
 
     private static final byte[] DEV_ID_THEOR    = {(byte)0x30,(byte)0x01,(byte)0xca,(byte)0xde};
             static final double TIME_UNIT       = 1 / (128 * 499.2 * 1000000);
+            static final int    LIGHT_SPEED     = 299792458;
     private static final short  ANTENNA_DELAY   = (short)0x8000;
 
     /*                  REGISTERS MAP                */
@@ -401,7 +402,7 @@ abstract class Dwm1000 {
         pmsc_ctrl0[1] = (byte)0x02;
         writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
         sleep(10);
-        maxSpeedFT311();
+        //maxSpeedFT311();
     }
 
     private void resetRx(){

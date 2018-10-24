@@ -9,7 +9,14 @@ class Dwm1000Master extends Dwm1000 {
 
     private final int           numberSlaves    = 1;
     private final UwbMessages[] messagesArray   = new UwbMessages[numberSlaves]; //FIXME
-    private static final double correctivePol[] = { -0.0081, 0.0928, 0.6569, -0.0612};
+    //private static final double correctivePol[] = { -0.0081, 0.0928, 0.6569, -0.0612};
+    //private static final double correctivePol[] = {0.004396537699051796, 0.9195024228226539,
+    //        0.23848199262062902}; // 4.30m calib, distance
+    private static final double correctivePol[] = {-8.18957391e-07, -2.34689642e-04, -2.48275823e-02, -1.15859275e+00,
+            -2.04203118e+01}; // 7.94m calib, Pr
+    private static final double __estimated_power = -14.3+20*Math.log10(LIGHT_SPEED)-
+            20*Math.log10(4*Math.PI*6489e6);
+
     private              double distancemm[]    = new double[numberSlaves];
     enum State {
         POLL_INIT,
@@ -38,13 +45,10 @@ class Dwm1000Master extends Dwm1000 {
 
     double[] getDistances() {
         long[] allClockTime = new long[6 * messagesArray.length];
-        //long start, stop;
-        //start = SystemClock.elapsedRealtimeNanos();
         for (int i = 0; i < numberSlaves; ++i) {
             Log.d("Slave number", String.valueOf(i));
             System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
         }
-        //stop = SystemClock.elapsedRealtimeNanos();
         return compute_distances(allClockTime); //FIXME
         //return stop - start;
     }
@@ -112,7 +116,7 @@ class Dwm1000Master extends Dwm1000 {
                             clockTime[1] = byteArray5ToLong(Arrays.copyOfRange(data, 0, 5));
                             clockTime[2] = byteArray5ToLong(Arrays.copyOfRange(data, 5, 10));
                             clockTime[5] = byteArray5ToLong(Arrays.copyOfRange(data, 10, 15));
-                            if (clockTime[5] < clockTime[2] || clockTime[4] < clockTime[0]) {
+                            if (clockTime[5] < clockTime[1] || clockTime[4] < clockTime[0]) {
                                 caseImIn = 11;
                                 state = State.POLL_INIT;
                             }
@@ -151,14 +155,27 @@ class Dwm1000Master extends Dwm1000 {
             //if (!(tReplySlave > tRoundMaster || tReplyMaster > tRoundSlave)) {
                 tof = (tRoundMaster * tRoundSlave - tReplyMaster * tReplySlave) * TIME_UNIT /
                         (tRoundMaster + tRoundSlave + tReplyMaster + tReplySlave);
-                double distanceMeasured = tof * 299792458;
-                distance = distanceMeasured;
+                double distanceMeasured = tof * LIGHT_SPEED;
+                //distance = distanceMeasured;
                 /*distance = correctivePol[0];
                 for(int j = 1; j < 4; ++j) {
                     distance = distance * distanceMeasured + correctivePol[j];
                 }*/
                 //if (distance < 100) {
-                    distancemm[i] = distance * 1000;
+
+            double estimated_power = __estimated_power - 20 * Math.log10(distanceMeasured);
+            if (estimated_power >= -50 || distanceMeasured <= 0) {
+                estimated_power = -50;
+            } else if (estimated_power<= -110) {
+                estimated_power = -110;
+            }
+                distance = distanceMeasured - (Math.pow(estimated_power, 4) * correctivePol[0] +
+                        Math.pow(estimated_power, 3) * correctivePol[1] +
+                        Math.pow(estimated_power, 2) * correctivePol[2] +
+                        estimated_power * correctivePol[3] +
+                        correctivePol[4]);
+                            distancemm[i] = 1000 *//(distance*distance*correctivePol[0]+
+                            distance;//*correctivePol[1]+correctivePol[2]);
             //}
             //TODO
         }
