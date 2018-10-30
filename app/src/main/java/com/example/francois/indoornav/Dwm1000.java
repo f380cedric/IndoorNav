@@ -398,6 +398,8 @@ abstract class Dwm1000 {
             private void updatePreambleCode(){
                 byte chan[] = readDataSpi(CHAN_CTRL, (byte)2, (byte)2);
                 byte preambleCode = getPreambleCode();
+                chan[0] &= 0x3F;
+                chan[1] &= 0xF8;
                 chan[0] |= preambleCode << 6;
                 chan[1] |= preambleCode >>> 2;
                 writeDataSpi(CHAN_CTRL, (byte)2, chan, (byte)2);
@@ -517,6 +519,7 @@ abstract class Dwm1000 {
                 updatePrf();
                 updatePreambleCode();
                 updatePreambleSize();
+                updateTimeoutDelay();
             }
             private void setChannel(CHANNEL channel) {
                 super.setChannel(channel);
@@ -600,6 +603,7 @@ abstract class Dwm1000 {
             private void updatePreambleCode(){
                 byte chan[] = readDataSpi(CHAN_CTRL, (byte)3, (byte)1);
                 byte preambleCode = getPreambleCode();
+                chan[0] &= 0x07;
                 chan[0] |= preambleCode << RX_PCODE;
                 writeDataSpi(CHAN_CTRL, (byte)3, chan, (byte)1);
             }
@@ -624,6 +628,7 @@ abstract class Dwm1000 {
 
             private void updatePrf(){
                 byte prf[] = readDataSpi(CHAN_CTRL, (byte)2, (byte)1);
+                prf[0] &= 0xF3;
                 prf[0] |= getPrf().value << RXPRF;
                 writeDataSpi(CHAN_CTRL, (byte)2, prf, (byte)1);
                 ByteBuffer drxTune1a = ByteBuffer.allocate(2);
