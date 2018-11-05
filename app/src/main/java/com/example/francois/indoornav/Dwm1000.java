@@ -1187,11 +1187,11 @@ abstract class Dwm1000 {
         double A = config.receiver.getPrf() == Define.Channel.PRF._16MHZ ? 113.77:121.74;
         int to_remove = config.receiver.getBitRate() == Define.Channel.BITRATE._110KBPS ? 64:5;
         byte[] cir_pwr = readDataSpi(RX_FQUAL, (byte)6, (byte)2);
-        int C = (cir_pwr[0] & 0xFF) | (cir_pwr[1] & 0xFF) << 8;
+        long C = (cir_pwr[0] & 0xFF) | (cir_pwr[1] & 0xFF) << 8;
         byte[] rxpacc = readDataSpi(RX_FINFO, (byte)2, (byte) 2);
         byte [] rxpacc_nosat = readDataSpi(DRX_CONF,(byte) 0x2C, (byte)2);
-        int N = (rxpacc[0] & 0xF0)>>>4 | (rxpacc[1] & 0xFF)<< 4;
-        int correct = (rxpacc_nosat[0] & 0xFF) | (rxpacc_nosat[1] & 0xFF)<<8;
+        long N = (rxpacc[0] & 0xF0)>>>4 | (rxpacc[1] & 0xFF)<< 4;
+        long correct = (rxpacc_nosat[0] & 0xFF) | (rxpacc_nosat[1] & 0xFF)<<8;
         if (N == correct) {
             N -= to_remove;
         }
@@ -1202,14 +1202,14 @@ abstract class Dwm1000 {
         double A = config.receiver.getPrf() == Define.Channel.PRF._16MHZ ? 113.77:121.74;
         int to_remove = config.receiver.getBitRate() == Define.Channel.BITRATE._110KBPS ? 64:5;
         byte[] fp_ampl1 = readDataSpi(RX_TIME, (byte)7,(byte)2);
-        int F1 = (fp_ampl1[0] & 0xFF) | (fp_ampl1[1] & 0xFF) <<8;
+        long F1 = (fp_ampl1[0] & 0xFF) | (fp_ampl1[1] & 0xFF) <<8;
         byte[] fp_ampl23 = readDataSpi(RX_FQUAL, (byte)0x02, (byte)4);
-        int F2 = (fp_ampl23[0] & 0xFF) | (fp_ampl23[1] & 0xFF) <<8;
-        int F3 = (fp_ampl23[2] & 0xFF) | (fp_ampl23[3] & 0xFF) <<8;
+        long F2 = (fp_ampl23[0] & 0xFF) | (fp_ampl23[1] & 0xFF) <<8;
+        long F3 = (fp_ampl23[2] & 0xFF) | (fp_ampl23[3] & 0xFF) <<8;
         byte[] rxpacc = readDataSpi(RX_FINFO, (byte)2, (byte) 2);
         byte [] rxpacc_nosat = readDataSpi(DRX_CONF,(byte) 0x2C, (byte)2);
-        int N = (rxpacc[0] & 0xF0)>>>4 | (rxpacc[1] & 0xFF)<< 4;
-        int correct = (rxpacc_nosat[0] & 0xFF) | (rxpacc_nosat[1] & 0xFF)<<8;
+        long N = (rxpacc[0] & 0xF0)>>>4 | (rxpacc[1] & 0xFF)<< 4;
+        long correct = (rxpacc_nosat[0] & 0xFF) | (rxpacc_nosat[1] & 0xFF)<<8;
         if (N == correct) {
             N -= to_remove;
         }
