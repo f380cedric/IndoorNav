@@ -388,6 +388,7 @@ abstract class Dwm1000 {
                 }
                 writeDataSpi(RF_CONF, (byte) 0x0C, txctrl.array(), (byte) 3);
                 writeDataSpi(TX_CAL, (byte) 0x0B, tc, (byte) 1);
+                updateTxPower();
             }
             private void updateBitrate(){
                 writeDataSpi(TX_FCTRL, (byte) 1,
@@ -510,7 +511,9 @@ abstract class Dwm1000 {
         }
 
         class Receiver extends Channel{
-            private short timeoutDelay = 0;
+            private short frameTimeoutDelay = 0;
+            private int pac;
+            private int sfd;
 
             Receiver(){
                 super();
@@ -519,7 +522,7 @@ abstract class Dwm1000 {
                 updatePrf();
                 updatePreambleCode();
                 updatePreambleSize();
-                updateTimeoutDelay();
+                updateFrameTimeoutDelay();
             }
             private void setChannel(CHANNEL channel) {
                 super.setChannel(channel);
@@ -550,19 +553,19 @@ abstract class Dwm1000 {
                 updatePrf();
             }
 
-            void setTimeoutDelay(short timeoutDelay) {
-                this.timeoutDelay = timeoutDelay;
-                updateTimeoutDelay();
+            void setFrameTimeoutDelay(short timeoutDelay) {
+                this.frameTimeoutDelay = timeoutDelay;
+                updateFrameTimeoutDelay();
 
             }
 
-            private  void updateTimeoutDelay(){
+            private  void updateFrameTimeoutDelay(){
                 byte sysCfg[] = readDataSpi(SYS_CFG, (byte) 0x03, (byte)0x01);
                 sysCfg[0] |= (1<<RXWTOE);
                 ByteBuffer rxfwto = ByteBuffer.allocate(2);
                 rxfwto.order(ByteOrder.LITTLE_ENDIAN);
-                rxfwto.putShort(timeoutDelay);
-                if (timeoutDelay == 0){
+                rxfwto.putShort(frameTimeoutDelay);
+                if (frameTimeoutDelay == 0){
                     sysCfg[0] &= ~(1<<RXWTOE);
                 }
 
@@ -591,13 +594,16 @@ abstract class Dwm1000 {
                      case _110KBPS:
                          drxTune0b.putShort((short)0x000A);
                          sys[0] = 1<<RXM110K;
+                         sfd = 64;
                          break;
                      case _850KBPS: case _6800KBPS:
                          drxTune0b.putShort((short)0x0001);
+                         sfd = 8;
                          break;
                  }
                  writeDataSpi(SYS_CFG, (byte)2, sys, (byte)1);
                  writeDataSpi(DRX_CONF, (byte)0x02, drxTune0b.array(),(byte)2);
+                 updateSFDTimeout();
             }
 
             private void updatePreambleCode(){
@@ -624,6 +630,7 @@ abstract class Dwm1000 {
                 }
                 writeDataSpi(DRX_CONF, (byte)0x06, drxTune1b.array(), (byte)2);
                 updatePacSize();
+                updateSFDTimeout();
             }
 
             private void updatePrf(){
@@ -663,15 +670,19 @@ abstract class Dwm1000 {
                         switch (getPreambleSize()){
                             case _64: case _128:
                                 drxTune2.putInt(0x311A002D);
+                                pac = 8;
                                 break;
                             case _256: case _512:
                                 drxTune2.putInt(0x331A0052);
+                                pac = 16;
                                 break;
                             case _1024:
                                 drxTune2.putInt(0x351A009A);
+                                pac = 32;
                                 break;
                             case _1536: case _2048: case _4096:
                                 drxTune2.putInt(0x371A011D);
+                                pac = 64;
                                 break;
                         }
                         break;
@@ -679,20 +690,32 @@ abstract class Dwm1000 {
                         switch (getPreambleSize()){
                             case _64: case _128:
                                 drxTune2.putInt(0x313B006B);
+                                pac = 8;
                                 break;
                             case _256: case _512:
                                 drxTune2.putInt(0x333B00BE);
+                                pac = 16;
                                 break;
                             case _1024:
                                 drxTune2.putInt(0x353B015E);
+                                pac = 32;
                                 break;
                             case _1536: case _2048: case _4096:
                                 drxTune2.putInt(0x373B0296);
+                                pac = 64;
                                 break;
                         }
                         break;
                 }
                 writeDataSpi(DRX_CONF, (byte)0x08, drxTune2.array(), (byte)4);
+            }
+
+            private void updateSFDTimeout(){
+                ByteBuffer timeout = ByteBuffer.allocate(2);
+                timeout.order(ByteOrder.LITTLE_ENDIAN);
+                timeout.putShort((short)(Integer.parseInt(getPreambleSize().toString().substring(1)) +
+                        sfd + 1 - pac));
+                writeDataSpi(DRX_CONF, (byte)0x20, timeout.array(),(byte)2);
             }
         }
 
@@ -904,7 +927,7 @@ abstract class Dwm1000 {
         sysCfg[0] |= (1<<RXWTOE);
         writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, (byte)0x01);*/
 
-        config.receiver.setTimeoutDelay((short)5000);
+        config.receiver.setFrameTimeoutDelay((short)65000);
 
         // No setup of IRQ (unlike in Quentin's code)
         // ...
