@@ -6,58 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".CalibrationTest">
 
-    <Spinner
-        android:id="@+id/prf_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:entries="@array/prf_values"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintBaseline_toBaselineOf="@+id/prf_textView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/prf_textView" />
-
-    <TextView
-        android:id="@+id/prf_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginTop="32dp"
-        android:text="PRF (MHz):"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/sfd_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginTop="24dp"
-        android:text="SFD mode:"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/prf_textView" />
-
-    <Spinner
-        android:id="@+id/sfd_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:entries="@array/sdf_modes"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintBaseline_toBaselineOf="@+id/sfd_textView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/sfd_textView" />
-
     <Button
         android:id="@+id/init_button"
         android:layout_width="wrap_content"
@@ -68,7 +16,7 @@
         android:onClick="testDwm1000Connection"
         android:text="init"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sfd_textView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/init_textView"
