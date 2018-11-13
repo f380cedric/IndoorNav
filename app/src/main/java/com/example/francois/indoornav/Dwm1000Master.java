@@ -134,8 +134,8 @@ class Dwm1000Master extends Dwm1000 {
             double estimated_power = __estimated_power - 20 * Math.log10(distanceMeasured);
             if (estimated_power >= -50 || distanceMeasured <= 0) {
                 estimated_power = -50;
-            } else if (estimated_power<= -110) {
-                estimated_power = -110;
+            } else if (estimated_power<= -92) {
+                estimated_power = -92;
             }
             distance = distanceMeasured - (Math.pow(estimated_power, 4) * correctivePol[0] +
                     Math.pow(estimated_power, 3) * correctivePol[1] +
