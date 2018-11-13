@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
 
-    private final int           numberSlaves    = 1;
+    private final int           numberSlaves    = 3;
     private final UwbMessages[] messagesArray   = new UwbMessages[numberSlaves]; //FIXME
     //private static final double correctivePol[] = { -0.0081, 0.0928, 0.6569, -0.0612};
     //private static final double correctivePol[] = {0.004396537699051796, 0.9195024228226539,
@@ -24,9 +24,13 @@ class Dwm1000Master extends Dwm1000 {
         END,
     }
 
-
-
-
+    private              double coordinates[]   = {0,0};
+    private static final int BEACONPOS1X        = 15;
+    private static final int BEACONPOS1Y        = 1421;
+    private static final int BEACONPOS2X        = 1185;
+    private static final int BEACONPOS2Y        = 827;
+    private static final int BEACONPOS3X        = 0;
+    private static final int BEACONPOS3Y        = 0;
 
     Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
         super(my_spimInterface);
@@ -45,7 +49,7 @@ class Dwm1000Master extends Dwm1000 {
         for (int i = 0; i < numberSlaves; ++i) {
             System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
         }
-        return compute_distances(allClockTime); //FIXME
+        return computeCoordinates(compute_distances(allClockTime));
     }
 
     private long[] ranging(UwbMessages messages) {

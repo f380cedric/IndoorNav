@@ -38,7 +38,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.v("Error:", e.toString());
                 }
-                publishProgress(++it, distance[0]);
+                publishProgress(++it, distance[0], distance[1]);
             }
             return "Done";
         }
@@ -47,7 +47,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         protected void onProgressUpdate(Double... values) {
             super.onProgressUpdate(values);
             textTestBox2.setText("Iteration: " + values[0]);
-            textTestBox3.setText("Distances: " + values[1]);
+            textTestBox3.setText("Distances: \n" + values[1] + "\n" + values[2]);
         }
 
         @Override
