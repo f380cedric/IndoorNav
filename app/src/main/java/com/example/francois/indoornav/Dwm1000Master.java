@@ -152,4 +152,82 @@ class Dwm1000Master extends Dwm1000 {
     }
 
 
+    private double[] computeCoordinates(double[] distances) {
+
+        int p[][] = new int[2][3];
+        p[0][0] = BEACONPOS1X;
+        p[1][0] = BEACONPOS1Y;
+        p[0][1] = BEACONPOS2X;
+        p[1][1] = BEACONPOS2Y;
+        p[0][2] = BEACONPOS3X;
+        p[1][2] = BEACONPOS3Y;
+
+        double sumDistanceSquared = 0;
+        int[][] ppT = {{0,0}, {0,0}};
+        double[] c = {0,0};
+
+        for(int i = 0; i < numberSlaves; ++i) {
+            sumDistanceSquared += distances[i] * distances[i];
+            ppT[0][0] += p[0][i] * p[0][i];
+            ppT[1][0] += p[1][i] * p[0][i];
+            ppT[1][1] += p[1][i] * p[1][i];
+            c[0] += p[0][i];
+            c[1] += p[1][i];
+        }
+
+        c[0] /= numberSlaves;
+        c[1] /= numberSlaves;
+
+        ppT[0][1] = ppT[1][0];
+        double[][] ccT = {{c[0]*c[0],c[0]*c[1]},{c[0]*c[1],c[1]*c[1]}};
+
+        int pTp;
+        double temp;
+        double[] a = {0,0};
+        double[][] B = {{sumDistanceSquared - 2*ppT[0][0],-2*ppT[0][1]},
+                {-2*ppT[1][0],sumDistanceSquared-2*ppT[1][1]}};
+
+        for(int i = 0; i < numberSlaves; ++i){
+            pTp = p[0][i] * p[0][i] + p[1][i] * p[1][i];
+            temp = pTp - distances[i] * distances[i];
+
+            a[0] += temp * p[0][i];
+            a[1] += temp * p[1][i];
+
+            B[0][0] -= pTp;
+            B[1][1] -= pTp;
+
+        }
+
+        a[0] /= numberSlaves;
+        a[1] /= numberSlaves;
+        B[0][0] /= numberSlaves;
+        B[1][0] /= numberSlaves;
+        B[0][1] /= numberSlaves;
+        B[1][1] /= numberSlaves;
+
+        double[] f = new double[2];
+
+        f[0] = a[0] + B[0][0]*c[0] + B[0][1]*c[1] + 2*(ccT[0][0]*c[0] + ccT[0][1]*c[1]);
+        f[1] = a[1] + B[1][0]*c[0] + B[1][1]*c[1] + 2*(ccT[1][0]*c[0] + ccT[1][1]*c[1]);
+
+        double[][] H = {{2*(-ppT[0][0]/(double)numberSlaves+ccT[0][0]),
+                2*(-ppT[0][1]/(double)numberSlaves+ccT[0][1])},
+                {2*(-ppT[1][0]/(double)numberSlaves+ccT[1][0]),
+                2*(-ppT[1][1]/(double)numberSlaves+ccT[1][1])}};
+
+        double detH = H[0][0]*H[1][1] - H[0][1]*H[1][0];
+        double invH[][] = {{H[1][1]/detH, -H[0][1]/detH},{-H[1][0]/detH,H[0][0]/detH}};
+        double q[] = {-invH[0][0]*f[0] - invH[0][1]*f[1],-invH[1][0]*f[0] - invH[1][1]*f[1]};
+
+        this.coordinates[0] = c[0] + q[0];
+        this.coordinates[1] = c[1] + q[1];
+        return coordinates;
+    }
+
+    double[] getCoordinates() {
+        computeCoordinates(distancemm);
+        return this.coordinates;
+    }
+
 }
