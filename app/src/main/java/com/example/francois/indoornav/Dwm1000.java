@@ -67,6 +67,10 @@ abstract class Dwm1000 {
 
     private Config config;
 
+    Config getConfig() {
+        return config;
+    }
+
     class Config {
         final Spi spi;
         final Transmitter transmitter;
@@ -859,7 +863,6 @@ abstract class Dwm1000 {
     // Initialize DWM1000
     boolean initDwm1000(){
         // Reset DWM1000
-        //resetDwm1000();
         config = new Config();
         // Check DWM1000 ID
         byte[] deviceId = readDeviceId();
@@ -867,74 +870,22 @@ abstract class Dwm1000 {
             return false;
         }
 
-        // SYS_CFG: system configuration (configure receiver)
-        //byte[] sysCfg;
-        // CHAN_CTRL: Configure channel control
-       /* byte[] chanCtrl = new byte[] {(byte) (1<<RXPRF)}; // Set RXPRF to 01
-        writeDataSpi(CHAN_CTRL, (byte)0x02, chanCtrl, (byte)0x01);*/
-
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // DEFAULT CONFIGURATIONS THAT SHOULD BE MODIFIED (SECTION 2.5.5 OF USER MANUAL)
-        // AGC_TUNE1
-        /*byte[] agc_tune1 = {(byte)0x70, (byte)0x88};
-        writeDataSpi(AGC_CTRL, (byte)0x04, agc_tune1, (byte)0x02);*/
-
         // AGC_TUNE2
         byte[] agc_tune2 = {(byte)0x07, (byte)0xa9, (byte)0x02, (byte)0x25};
         writeDataSpi(AGC_CTRL, (byte)0x0c, agc_tune2, (byte)0x04);
 
-        // DRX_TUNE2
-        /*byte[] drx_tune2 = {(byte)0x2d, (byte)0x00, (byte)0x1a, (byte)0x31};
-        writeDataSpi(DRX_CONF, (byte)0x08, drx_tune2, (byte)0x04);*/
-
         // LDE_CFG1: NTM
-        byte[] lde_cfg1 = {(byte)0x6d};
+        byte[] lde_cfg1 = {(byte)0x6d};	// LOS CONFIGURATION
+        //byte[] lde_cfg1 = {(byte)0x07};		// NLOS CONFIGURATION
+
         writeDataSpi(LDE_CTRL, (short)0x0806, lde_cfg1, (byte)0x01);
 
         // LDE_CFG2
-        /*byte[] lde_cfg2 = {(byte)0x07, (byte)0x16};
-        writeDataSpi(LDE_CTRL, (short) 0x1806, lde_cfg2, (byte)0x02);*/
+        //byte[] lde_cfg2 = {(byte)0x07, (byte)0x16};
+        // NLOS CONFIGURATION
+        //byte[] lde_cfg2 = {(byte)0x03, (byte)0x00};
 
-        // TX_POWER
-        /*byte[] tx_power = {(byte)0x48, (byte)0x28, (byte)0x08, (byte)0x0e};
-        writeDataSpi(TX_POWER, tx_power, (byte)0x04);*/
-
-        // RF_TXCTRL
-        /*byte[] rf_txctrl = {(byte)0xe0, (byte)0x3f, (byte)0x1e};
-        writeDataSpi(RF_CONF, (byte)0x0c, rf_txctrl, (byte)0x03);*/
-
-        // TC_PGDELAY
-       /* byte[] tc_pgdelay = {(byte)0xc0};
-        writeDataSpi(TX_CAL, (byte)0x0b, tc_pgdelay, (byte)0x01);*/
-
-        // FS_PLLTUNE
-        /*byte[] fs_plltune = {(byte)0xbe};
-        writeDataSpi(FS_CTRL, (byte)0x0b, fs_plltune, (byte)0x01);*/
-
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-        // TX_FCTRL: Transmit frame control
-       /* byte[] tx_fctrl = new byte[] {(byte)0xC0};
-        writeDataSpi(TX_FCTRL, (byte)0x01, tx_fctrl, (byte)0x01);*/
-
-        // RX_FWTO: setup Rx Timeout 5ms and set RXWTOE bit
-        /*byte[] timeout = {(byte)0x88, (byte)0x13};
-        writeDataSpi(RX_FWTO, timeout, (byte)0x02);
-
-        sysCfg = readDataSpi(SYS_CFG, (byte) 0x03, (byte)0x01);
-        sysCfg[0] |= (1<<RXWTOE);
-        writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, (byte)0x01);*/
-
-        config.receiver.setFrameTimeoutDelay((short)65000);
-
-        // No setup of IRQ (unlike in Quentin's code)
-        // ...
-
-        // TX_ANTD: Set the Tx antenna delay
-        //byte[] antennaDelay = {(byte)ANTENNA_DELAY, (byte)(ANTENNA_DELAY>>8)};
-        //writeDataSpi(TX_ANTD, antennaDelay, (byte)0x02);
+        config.receiver.setFrameTimeoutDelay((short)5000);
 
         // End of initialization function
         return true;
@@ -1129,59 +1080,6 @@ abstract class Dwm1000 {
 
 
     // -------------- HELPER FUNCTIONS -------------- //
-    // Reset DWM1000
-    /*private void resetDwm1000(){
-        // Reset FT311 chip
-        resetFT311();
-        // Write to PMSC_CTRL0 register
-        byte address    = PMSC;
-        byte offset   = (byte)0x00;
-        byte dataLength = (byte)0x01;
-        byte[] pmsc_ctrl0 = new byte[1];
-        // Set SYSCLKS bits to 01 (other 6 bits can be cleared)
-        pmsc_ctrl0[0] = (byte) 0x01;
-
-        writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
-        sleep(1);
-        // Clear SOFTRESET bits
-        offset = (byte) 0x03;
-
-        pmsc_ctrl0[0] = (byte) 0x00;
-
-        writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
-        sleep(1);
-        // Reset SOFTRESET bits
-
-        pmsc_ctrl0[0] = (byte) 0xF0;
-
-        writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
-        sleep(5);
-
-        // LOAD THE LDE ALGORITHM MICROCODE INTO LDE RAM
-        // Write to PMSC_CTRL0 register: set LSBs to 0x0301
-        address     = PMSC;
-        offset   = (byte)0x00;
-        dataLength  = (byte)0x02;
-        pmsc_ctrl0 = new byte[] {(byte) 0x01, (byte) 0x03};
-        writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
-        sleep(1);
-        // OTP_CTRL: set LDELOAD bit to 1
-        address     = OTP_IF;
-        offset   = (byte)0x06;
-        dataLength  = (byte)0x02;
-        byte[] otp_ctrl = {(byte)0x00, (byte)0x80};
-        writeDataSpi(address, offset, otp_ctrl, dataLength);
-        sleep(10);
-        // Reset SYSCLKS bits to 00
-        address     = PMSC;
-        offset   = (byte)0x00;
-        dataLength  = (byte)0x02;
-        pmsc_ctrl0[0] = (byte)0x00;
-        pmsc_ctrl0[1] = (byte)0x02;
-        writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
-        sleep(10);
-        //maxSpeedFT311();
-    }*/
 
     double RxPower() {
         double A = config.receiver.getPrf() == Define.Channel.PRF._16MHZ ? 113.77:121.74;
@@ -1236,19 +1134,12 @@ abstract class Dwm1000 {
 
     // Reset FT311 parameters for SPI-M interface
     private void resetFT311(){
-        /*  spimInterface.Reset();
-        // Set SPI interface parameters
-        byte clockPhaseMode      = (byte) 0x00;
-        byte dataOrderSelected   = (byte) 0x00;
-        int clockFreq            = 3000000;
-        spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);*/
         config.spi.reset();
     }
     private void maxSpeedFT311(){
         byte clockPhaseMode      = (byte) 0x00;
         Define.Spi.DATAORDER dataOrderSelected   = Define.Spi.DATAORDER.MSB;
         int clockFreq            = 18000000;
-//        spimInterface.SetConfig(clockPhaseMode,dataOrderSelected,clockFreq);
         config.spi.set(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 

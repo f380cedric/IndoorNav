@@ -1,8 +1,5 @@
 package com.example.francois.indoornav;
 
-import android.os.SystemClock;
-import android.util.Log;
-
 import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
@@ -46,63 +43,48 @@ class Dwm1000Master extends Dwm1000 {
     double[] getDistances() {
         long[] allClockTime = new long[6 * messagesArray.length];
         for (int i = 0; i < numberSlaves; ++i) {
-            Log.d("Slave number", String.valueOf(i));
             System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
         }
         return compute_distances(allClockTime); //FIXME
-        //return stop - start;
     }
 
     private long[] ranging(UwbMessages messages) {
         long[] clockTime = new long[6];
         State state = State.POLL_INIT;
-        int caseImIn = 0;
         while (state != State.END) {
-            Log.d("Current state: ", state.toString());
             switch (state) {
                 case POLL_INIT:
-                    caseImIn = 0;
                     sendFrameUwb(messages.masterPoll, (byte) messages.masterPoll.length);
                     state = State.WAIT_POLL_SEND;
                     break;
                 case WAIT_POLL_SEND:
-                    caseImIn = 0;
                     if (checkFrameSent()) {
                         clockTime[0] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.WAIT_RESPONSE;
-                        caseImIn = 1;
                     }
                     break;
                 case WAIT_RESPONSE:
-                    caseImIn = -1;
                     switch (checkForFrameUwb()) {
                         case 0:
-                            caseImIn = 0;
                             state = State.POLL_INIT;
                             if (receiveFrameUwb()[0] == messages.slaveResponse[0]) {
-                                caseImIn = 10;
                                 clockTime[3] = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
                                 sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
                                 state = State.WAIT_FINAL_SEND;
                             }
                             break;
                         case 1:
-                            caseImIn = 1;
                             state = State.POLL_INIT;
                             break;
                         case 2:
-                            caseImIn = 2;
                             state = State.POLL_INIT;
                             break;
                         case 3:
-                            caseImIn = 3;
                             break;
                     }
                     break;
                 case WAIT_FINAL_SEND:
-                    caseImIn = 0;
                     if (checkFrameSent()) {
-                        caseImIn = 1;
                         clockTime[4] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
                         state = State.GET_TIMES;
                     }
@@ -110,32 +92,26 @@ class Dwm1000Master extends Dwm1000 {
                 case GET_TIMES:
                     switch (checkForFrameUwb()) {
                         case 0:
-                            caseImIn = 0;
                             state = State.END;
                             byte[] data = receiveFrameUwb();
                             clockTime[1] = byteArray5ToLong(Arrays.copyOfRange(data, 0, 5));
                             clockTime[2] = byteArray5ToLong(Arrays.copyOfRange(data, 5, 10));
                             clockTime[5] = byteArray5ToLong(Arrays.copyOfRange(data, 10, 15));
                             if (clockTime[5] < clockTime[1] || clockTime[4] < clockTime[0]) {
-                                caseImIn = 11;
                                 state = State.POLL_INIT;
                             }
                             break;
                         case 1:
-                            caseImIn = 1;
                             state = State.POLL_INIT;
                             break;
                         case 2:
-                            caseImIn = 2;
                             state = State.POLL_INIT;
                             break;
                         case 3:
-                            caseImIn = 3;
                             break;
                     }
                     break;
             }
-            Log.d("Outputs: ", String.valueOf(caseImIn));
         }
         return clockTime;
     }
@@ -152,32 +128,21 @@ class Dwm1000Master extends Dwm1000 {
             tReplySlave = clockTime[2] - clockTime[1];
             tRoundSlave = clockTime[5] - clockTime[2];
 
-            //if (!(tReplySlave > tRoundMaster || tReplyMaster > tRoundSlave)) {
-                tof = (tRoundMaster * tRoundSlave - tReplyMaster * tReplySlave) * TIME_UNIT /
-                        (tRoundMaster + tRoundSlave + tReplyMaster + tReplySlave);
-                double distanceMeasured = tof * LIGHT_SPEED;
-                //distance = distanceMeasured;
-                /*distance = correctivePol[0];
-                for(int j = 1; j < 4; ++j) {
-                    distance = distance * distanceMeasured + correctivePol[j];
-                }*/
-                //if (distance < 100) {
-
+            tof = (tRoundMaster * tRoundSlave - tReplyMaster * tReplySlave) * TIME_UNIT /
+                    (tRoundMaster + tRoundSlave + tReplyMaster + tReplySlave);
+            double distanceMeasured = tof * LIGHT_SPEED;
             double estimated_power = __estimated_power - 20 * Math.log10(distanceMeasured);
             if (estimated_power >= -50 || distanceMeasured <= 0) {
                 estimated_power = -50;
             } else if (estimated_power<= -110) {
                 estimated_power = -110;
             }
-                distance = distanceMeasured - (Math.pow(estimated_power, 4) * correctivePol[0] +
-                        Math.pow(estimated_power, 3) * correctivePol[1] +
-                        Math.pow(estimated_power, 2) * correctivePol[2] +
-                        estimated_power * correctivePol[3] +
-                        correctivePol[4]);
-                            distancemm[i] = 1000 *//(distance*distance*correctivePol[0]+
-                            distance;//*correctivePol[1]+correctivePol[2]);
-            //}
-            //TODO
+            distance = distanceMeasured - (Math.pow(estimated_power, 4) * correctivePol[0] +
+                    Math.pow(estimated_power, 3) * correctivePol[1] +
+                    Math.pow(estimated_power, 2) * correctivePol[2] +
+                    estimated_power * correctivePol[3] +
+                    correctivePol[4]);
+            distancemm[i] = 100 * distance;
         }
         return distancemm;
     }
