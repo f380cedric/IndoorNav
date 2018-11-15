@@ -25,12 +25,12 @@ class Dwm1000Master extends Dwm1000 {
     }
 
     private              double coordinates[]   = {0,0};
-    private static final int BEACONPOS1X        = 15;
-    private static final int BEACONPOS1Y        = 1421;
-    private static final int BEACONPOS2X        = 1185;
-    private static final int BEACONPOS2Y        = 827;
-    private static final int BEACONPOS3X        = 0;
-    private static final int BEACONPOS3Y        = 0;
+    private static final int BEACONPOS1X        = 0;
+    private static final int BEACONPOS1Y        = 335;
+    private static final int BEACONPOS2X        = 1220;
+    private static final int BEACONPOS2Y        = 0;
+    private static final int BEACONPOS3X        = 1220;
+    private static final int BEACONPOS3Y        = 699;
 
     Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
         super(my_spimInterface);
