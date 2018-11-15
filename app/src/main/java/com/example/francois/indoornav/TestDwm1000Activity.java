@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
 import java.text.DecimalFormat;
 
 public class TestDwm1000Activity extends AppCompatActivity {
@@ -21,6 +23,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
     private TextView textTestBox4 ;
     private Location mytask;
     private Switch trackingSwitch;
+    private TextView statTextView;
 
     private DecimalFormat df;
 
@@ -72,6 +75,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         textTestBox3    = findViewById(R.id.textView15);
         textTestBox4    = findViewById(R.id.textView16);
         trackingSwitch  = findViewById(R.id.switch1);
+        statTextView   = findViewById(R.id.statTextView);
         df = new DecimalFormat();
         df.setMaximumFractionDigits(6);
 
@@ -126,6 +130,22 @@ public class TestDwm1000Activity extends AppCompatActivity {
         return sb.toString();
     }
 
+
+    public void variation(View view){
+        int itmax = 1000;
+        SummaryStatistics coordinate[] = {new SummaryStatistics(),new SummaryStatistics()};
+        double[] coor;
+        int it;
+        for( it = 0; it < itmax; ++it) {
+            coor = dwm1000.getDistances();
+            coordinate[0].addValue(coor[0]);
+            coordinate[1].addValue(coor[1]);
+        }
+        statTextView.setText(coordinate[0].getMean() + "\n" + coordinate[0].getMin() + "\n" +
+                coordinate[0].getMax() + "\n" + coordinate[0].getStandardDeviation() + "\n\n" +
+                coordinate[1].getMean() + "\n" + coordinate[1].getMin() + "\n" +
+                coordinate[1].getMax() + "\n" + coordinate[1].getStandardDeviation());
+    }
     // Convert byte to hex string
     private static String byteToHex(byte a) {
         return String.format("%02x", a);
