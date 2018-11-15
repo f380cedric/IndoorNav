@@ -27,10 +27,17 @@ class Dwm1000Master extends Dwm1000 {
     private              double coordinates[]   = {0,0};
     private static final int BEACONPOS1X        = 0;
     private static final int BEACONPOS1Y        = 335;
+    private static final int BEACONPOS1Z        = 264;
     private static final int BEACONPOS2X        = 1220;
     private static final int BEACONPOS2Y        = 0;
+    private static final int BEACONPOS2Z        = 225;
     private static final int BEACONPOS3X        = 1220;
     private static final int BEACONPOS3Y        = 699;
+    private static final int BEACONPOS3Z        = 155;
+
+    private static final int TAGZ               = 155;
+
+    private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
 
     Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
         super(my_spimInterface);
@@ -146,7 +153,8 @@ class Dwm1000Master extends Dwm1000 {
                     Math.pow(estimated_power, 2) * correctivePol[2] +
                     estimated_power * correctivePol[3] +
                     correctivePol[4]);
-            distancemm[i] = 100 * distance;
+            distance *= 100;
+            this.distancemm[i] = Math.sqrt(distance*distance - deltah[i]*deltah[i]);
         }
         return distancemm;
     }
