@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
 
+
 public class NavigationActivity extends AppCompatActivity {
 
     private NavigationView navigationView;
@@ -33,4 +34,9 @@ public class NavigationActivity extends AppCompatActivity {
         navigationView.resume();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        navigationView.pause();
+    }
 }

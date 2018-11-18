@@ -4,11 +4,13 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-public class IndoorMap {
+class IndoorMap {
 
     private Bitmap bitmap;
     private int sizeMapX;
     private int sizeMapY;
+    private int width;
+    private int height;
     private int screenX;
     private int screenY;
     private int mapPosX;
@@ -16,57 +18,66 @@ public class IndoorMap {
     private int previousMapPosX;
     private int previousMapPosY;
 
-    public IndoorMap(Context context, int myScreenX, int myScreenY){
+    IndoorMap(Context context, int myScreenX, int myScreenY){
         screenX = myScreenX;
         screenY = myScreenY;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.map_ua5);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.dessin);
         sizeMapX = bitmap.getWidth();
         sizeMapY = bitmap.getHeight();
+        width = sizeMapX;
+        height = sizeMapY;
         mapPosX = 0;
         mapPosY = 0;
     }
 
-    public void moveMap(int initX, int initY, int currentX, int currentY){
+    void moveMap(int initX, int initY, int currentX, int currentY){
         mapPosX = previousMapPosX-(currentX-initX);
         if (mapPosX<0){
             mapPosX = 0;
         }
-        if (mapPosX>sizeMapX-screenX){
-            mapPosX = sizeMapX-screenX;
+        if (width + mapPosX > sizeMapX){
+            mapPosX = sizeMapX - width;
         }
         mapPosY = previousMapPosY-(currentY-initY);
         if (mapPosY<0){
             mapPosY = 0;
         }
-        if (mapPosY>sizeMapY-screenY){
-            mapPosY = sizeMapY-screenY;
+        if (height + mapPosY > sizeMapY){
+            mapPosY = sizeMapY - height;
         }
     }
 
-    public void setPreviousMapXY(){
+    void setPreviousMapXY(){
         previousMapPosX = mapPosX;
         previousMapPosY = mapPosY;
     }
 
 
-    public Bitmap getBitmap(){
+    Bitmap getBitmap(){
         return bitmap;
     }
 
-    public int getMapPosX(){
+    int getMapPosX(){
         return mapPosX;
     }
 
-    public int getMapPosY(){
+    int getMapPosY(){
         return mapPosY;
     }
 
-    public int getBitMapWidth(){
+    int getBitMapWidth(){
         return sizeMapX;
     }
 
-    public int getBitMapHeight(){
+    int getBitMapHeight(){
         return sizeMapY;
     }
 
+    int getWidth() {
+        return width;
+    }
+
+    int getHeight() {
+        return height;
+    }
 }

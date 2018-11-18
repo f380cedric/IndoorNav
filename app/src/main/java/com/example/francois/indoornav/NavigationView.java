@@ -54,10 +54,10 @@ public class NavigationView extends SurfaceView implements Runnable
             // Draw background
             canvas.drawColor(Color.WHITE);
             // Draw map
-            Rect src = new Rect(0+indoorMap.getMapPosX(),
-                    0+indoorMap.getMapPosY(),
-                    screenX+indoorMap.getMapPosX(),
-                    screenY+indoorMap.getMapPosY());
+            Rect src = new Rect(indoorMap.getMapPosX(),
+                    indoorMap.getMapPosY(),
+                    indoorMap.getWidth(),
+                    indoorMap.getHeight());
             Rect dst = new Rect(0,0, screenX , screenY);
             canvas.drawBitmap(indoorMap.getBitmap(), src, dst, null);
             surfaceHolder.unlockCanvasAndPost(canvas);
