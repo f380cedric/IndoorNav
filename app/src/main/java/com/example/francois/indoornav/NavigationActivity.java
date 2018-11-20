@@ -21,22 +21,4 @@ public class NavigationActivity extends AppCompatActivity {
         setContentView(navigationView);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-        navigationView.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        navigationView.resume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        navigationView.pause();
-    }
 }
