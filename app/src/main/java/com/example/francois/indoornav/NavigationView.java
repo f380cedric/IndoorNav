@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -21,7 +22,7 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     private IndoorMap indoorMap;
 
     private Rect src = new Rect();
-    private Rect dst = new Rect();
+    private RectF dst = new RectF();
 
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector mDetector;
@@ -55,14 +56,20 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
         if(canvas != null) {
             canvas.drawColor(Color.WHITE);
             // Draw map
-            src.set(indoorMap.getMapPosX(),
-                    indoorMap.getMapPosY(),
-                    indoorMap.getWidth() + indoorMap.getMapPosX(),
-                    indoorMap.getHeight() + indoorMap.getMapPosY());
+            int x = indoorMap.getMapPosX();
+            int y = indoorMap.getMapPosY();
+            int w = (int)indoorMap.getWidth();
+            int h = (int)indoorMap.getHeight() ;
+            float sX = indoorMap.getMapScaleX();
+            float sY = indoorMap.getMapScaleY();
+            src.set(x, y,w + x,h + y);
             dst.set(0,0, screenX , screenY);
             canvas.drawBitmap(indoorMap.getBitmap(), src, dst, null);
-            canvas.drawBitmap(indoorMap.getMarker().getIcon(), indoorMap.getMarker().getX(),
-                    indoorMap.getMarker().getY(), null);
+            IndoorMap.Marker marker = indoorMap.getMarker();
+            src.set(0, 0, marker.getIcon().getWidth(),marker.getIcon().getHeight());
+            dst.set((marker.getX()-x)/sX-20,(marker.getY()-y)/sY-20,0,0);
+            dst.set(dst.left,dst.top, 40+dst.left,40+dst.top);
+            canvas.drawBitmap(marker.getIcon(), src, dst, null);
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
@@ -98,7 +105,7 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            indoorMap.panMap((int)distanceX, (int)distanceY);
+            indoorMap.panMap(distanceX, distanceY);
             return true;
         }
     }
@@ -106,8 +113,8 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            indoorMap.scaleAndFocusMap(detector.getScaleFactor(), (int) detector.getFocusX(),
-                    (int) detector.getFocusY());
+            indoorMap.scaleAndFocusMap(detector.getScaleFactor(), detector.getFocusX(),
+                    detector.getFocusY());
             return true;
         }
     }

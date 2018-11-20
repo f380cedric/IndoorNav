@@ -9,46 +9,50 @@ class IndoorMap {
     private Bitmap bitmap;
     private int sizeMapX;
     private int sizeMapY;
-    private int width;
-    private int height;
+    private float width;
+    private float height;
     private int screenX;
     private int screenY;
     private int mapPosX;
     private int mapPosY;
     private float scaleFactor;
+    private float real2MapX;
+    private float real2MapY;
     private Marker marker;
 
     IndoorMap(Context context, int myScreenX, int myScreenY) {
         screenX = myScreenX;
         screenY = myScreenY;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.map_ua5_2);
-        marker = new Marker(BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.map_ua5),
-                0,0);
         sizeMapX = bitmap.getWidth();
         sizeMapY = bitmap.getHeight();
+        real2MapX = sizeMapX/940f;
+        real2MapY = sizeMapY/1290f;
+        marker = new Marker(BitmapFactory.decodeResource(context.getResources(),
+                R.drawable.ic_location_marker),sizeMapX-100,sizeMapY-200);
+        setMarkerPos(470,645);
         width = sizeMapX;
         height = sizeMapY;
         mapPosX = 0;
         mapPosY = 0;
     }
 
-    void panMap(int distanceX, int distanceY){
-        mapPosX = Math.max(0, Math.min(mapPosX + distanceX*width/screenX, sizeMapX - width));
-        mapPosY = Math.max(0, Math.min(mapPosY + distanceY*height/screenY, sizeMapY - height));
+    void panMap(float distanceX, float distanceY){
+        mapPosX = (int)Math.max(0.f, Math.min(mapPosX + distanceX*width/screenX, sizeMapX - width));
+        mapPosY = (int)Math.max(0.f, Math.min(mapPosY + distanceY*height/screenY, sizeMapY - height));
     }
 
-    void moveMap(int newMapPosX, int newMapPosY){
-        mapPosX = Math.max(0, Math.min(newMapPosX, sizeMapX - width));
-        mapPosY = Math.max(0, Math.min(newMapPosY, sizeMapY - height));
+    void moveMap(float newMapPosX, float newMapPosY){
+        mapPosX = (int)Math.max(0.f, Math.min(newMapPosX, sizeMapX - width));
+        mapPosY = (int)Math.max(0.f, Math.min(newMapPosY, sizeMapY - height));
     }
 
-    void scaleAndFocusMap(float newScaleFactor, int focusX, int focusY) {
+    void scaleAndFocusMap(float newScaleFactor, float focusX, float focusY) {
         scaleFactor = Math.max(1.f, Math.min(scaleFactor * newScaleFactor, 5.f));
-        int oldWidth = width;
-        int oldHeight = height;
-        width = (int)(sizeMapX / scaleFactor);
-        height = (int)(sizeMapY / scaleFactor);
+        float oldWidth = width;
+        float oldHeight = height;
+        width = (sizeMapX / scaleFactor);
+        height = (sizeMapY / scaleFactor);
         moveMap(mapPosX+(focusX*oldWidth-focusX*width)/screenX,
                 mapPosY+(focusY*oldHeight-focusY*height)/screenY);
     }
@@ -74,12 +78,25 @@ class IndoorMap {
         return sizeMapY;
     }
 
-    int getWidth() {
+    float getWidth() {
         return width;
     }
 
-    int getHeight() {
+    float getHeight() {
         return height;
+    }
+
+    float getMapScaleX() {
+        return width/screenX;
+    }
+
+    float getMapScaleY() {
+        return height/screenY;
+    }
+
+    void setMarkerPos(float posX, float posY) {
+        marker.setX((int)(posX*real2MapX));
+        marker.setY((int)(posY*real2MapY));
     }
 
     Marker getMarker() {
@@ -87,25 +104,37 @@ class IndoorMap {
     }
 
     class Marker {
-        private Bitmap mIcon;
-        private int mX;
-        private int mY;
+        private Bitmap icon;
+        private int x;
+        private int y;
         Marker(Bitmap icon, int x, int y){
-            mIcon = icon;
-            mX = x;
-            mY = y;
+            this.icon = icon;
+            this.x = x;
+            this.y = y;
         }
 
         Bitmap getIcon() {
-            return mIcon;
+            return icon;
         }
 
         int getX() {
-            return mX;
+            return x;
         }
 
         int getY() {
-            return mY;
+            return y;
+        }
+
+        private void setIcon(Bitmap icon) {
+            this.icon = icon;
+        }
+
+        private void setX(int x) {
+            this.x = x;
+        }
+
+        private void setY(int y) {
+            this.y = y;
         }
     }
 }
