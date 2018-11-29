@@ -14,7 +14,7 @@
         android:layout_marginLeft="32dp"
         android:layout_marginTop="32dp"
         android:onClick="testDwm1000Connection"
-        android:text="Test DWM1000 connection"
+        android:text="@string/init"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,7 +25,6 @@
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:text="DWM1000 ID: 0x"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button3" />
 
@@ -36,7 +35,6 @@
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
         android:layout_marginTop="8dp"
-        android:text="Test textbox 2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/switch1" />
 
@@ -49,7 +47,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Test textbox 3"
         app:layout_constraintEnd_toStartOf="@+id/button5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView14" />
@@ -58,7 +55,6 @@
         android:id="@+id/textView16"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test textbox 4"
         app:layout_constraintBaseline_toBaselineOf="@+id/textView15"
         app:layout_constraintStart_toStartOf="@+id/button5" />
 
@@ -69,7 +65,6 @@
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:text="Test textbox"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
@@ -81,7 +76,7 @@
         android:layout_marginLeft="32dp"
         android:layout_marginTop="32dp"
         android:onClick="trackingSwitch"
-        android:text="Tracking"
+        android:text="@string/tracking"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -92,7 +87,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
         android:onClick="taskStatus"
-        android:text="Button"
+        android:text="@string/is_running"
         app:layout_constraintBaseline_toBaselineOf="@+id/switch1"
         app:layout_constraintStart_toEndOf="@+id/switch1" />
 
@@ -104,7 +99,7 @@
         android:layout_marginLeft="32dp"
         android:layout_marginTop="8dp"
         android:onClick="variation"
-        android:text="Stats"
+        android:text="@string/stats"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView15" />
 
@@ -114,7 +109,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
-        android:text="TextView"
         app:layout_constraintBaseline_toBaselineOf="@+id/button7"
         app:layout_constraintStart_toEndOf="@+id/button7" />
 </android.support.constraint.ConstraintLayout>

@@ -9,5 +9,7 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
-
+    <style name="AppThemeWithCompass" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/compass_picture</item>
+    </style>
 </resources>

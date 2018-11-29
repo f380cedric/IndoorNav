@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,7 +12,6 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/textView3"
         android:layout_centerHorizontal="true"
-        android:text="... °"
         android:textColor="@android:color/black"
         android:textSize="18sp" />
 
@@ -23,7 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/textView2"
         android:layout_centerHorizontal="true"
-        android:text="... °"
         android:textColor="@android:color/black"
         android:textSize="18sp" />
 
@@ -33,7 +30,6 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/textView1"
         android:layout_centerHorizontal="true"
-        android:text="... °"
         android:textColor="@android:color/black"
         android:textSize="18sp" />
 
@@ -44,9 +40,10 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/textView1"
         android:layout_marginTop="120dp"
-        android:text="Roll : "
+        android:text="@string/roll"
         android:textColor="@android:color/black"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:layout_alignLeft="@+id/textView1" />
 
     <TextView
         android:id="@+id/textView2"
@@ -55,9 +52,10 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/textView1"
         android:layout_marginTop="80dp"
-        android:text="Pitch : "
+        android:text="@string/pitch"
         android:textColor="@android:color/black"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:layout_alignLeft="@+id/textView1" />
 
     <TextView
         android:id="@+id/textView1"
@@ -67,8 +65,10 @@
         android:layout_alignParentTop="true"
         android:layout_marginStart="40dp"
         android:layout_marginTop="40dp"
-        android:text="Azimuth : "
+        android:text="@string/azimuth"
         android:textColor="@android:color/black"
-        android:textSize="18sp" />
+        android:textSize="18sp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="40dp" />
 
 </RelativeLayout>

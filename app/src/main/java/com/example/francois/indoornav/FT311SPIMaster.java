@@ -18,7 +18,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 /******************************FT311 GPIO interface class******************************************/
-class FT311SPIMasterInterface
+class FT311SPIMaster
 {
 
     private static final String ACTION_USB_PERMISSION =    "com.SPIMasterDemo.USB_PERMISSION";
@@ -28,6 +28,7 @@ class FT311SPIMasterInterface
     private FileInputStream inputstream;
     private FileOutputStream outputstream;
     private boolean mPermissionRequestPending = false;
+    private FT311SPIMasterListener mListener;
     //private volatile boolean READ_ENABLE = true;
     //private boolean accessory_attached = false;
     //public handler_thread handlerThread;
@@ -46,7 +47,7 @@ class FT311SPIMasterInterface
 
 
     /*constructor*/
-    FT311SPIMasterInterface(Context context){
+    FT311SPIMaster(Context context){
         super();
         global_context = context;
         /*shall we start a thread here or what*/
@@ -62,6 +63,16 @@ class FT311SPIMasterInterface
 
         inputstream = null;
         outputstream = null;
+    }
+
+    void registerListener(FT311SPIMasterListener listener){
+        mListener = listener;
+    }
+
+    void unregisterListener(FT311SPIMasterListener listener) {
+        if (mListener == listener) {
+            mListener = null;
+        }
     }
 
     /*reset method*/
@@ -139,7 +150,10 @@ class FT311SPIMasterInterface
 
         //status = 0x01;
         if(usbdata[0] != 0x62) {
-            return 0x06;
+            if (mListener != null) {
+                mListener.onDataFailure(status = 0x06);
+            }
+            return status;
         }
             /*copy the received data into the buffer*/
         System.arraycopy(usbdata, 1, buffer, 0, readcount - 1);
@@ -192,7 +206,10 @@ class FT311SPIMasterInterface
 
         /*success by default*/
         if(usbdata[0] !=  0x63) {
-            return 0x06;
+            if (mListener != null) {
+                mListener.onDataFailure(status = 0x06);
+            }
+            return status;
         }
             /*copy the received data into the buffer*/
         System.arraycopy(usbdata, 1, buffer, 0, readcount - 1);
@@ -215,6 +232,9 @@ class FT311SPIMasterInterface
                 status = 0x05;
             }
         }
+        if(status != 0 && mListener != null) {
+            mListener.onDataFailure(status);
+        }
         return status;
     }
     /*method to send on USB*/
@@ -232,6 +252,9 @@ class FT311SPIMasterInterface
             // TODO Auto-generated catch block
             status = 0x04;
             e.printStackTrace();
+        }
+        if(status != 0 && mListener != null) {
+            mListener.onDataFailure(status);
         }
         return status;
 
@@ -328,6 +351,9 @@ class FT311SPIMasterInterface
             inputstream = new FileInputStream(fd);
             outputstream = new FileOutputStream(fd);
         }
+        if (mListener != null) {
+        mListener.onDeviceConnected();
+        }
 
         //handlerThread = new handler_thread(inputstream);
         //handlerThread.start();
@@ -335,6 +361,10 @@ class FT311SPIMasterInterface
 
     private void CloseAccessory()
     {
+
+        if (mListener != null) {
+            mListener.onDeviceDisconnected();
+        }
         try{
             if(filedescriptor != null)
                 filedescriptor.close();
@@ -373,6 +403,7 @@ class FT311SPIMasterInterface
             {
                 synchronized (this)
                 {
+                    mPermissionRequestPending = false;
                     UsbAccessory accessory = intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false))
                     {
@@ -385,7 +416,6 @@ class FT311SPIMasterInterface
                         Log.d("LED", "permission denied for accessory "+ accessory);
 
                     }
-                    mPermissionRequestPending = false;
                 }
             }
             else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action))

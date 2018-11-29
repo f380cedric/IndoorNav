@@ -1,6 +1,27 @@
 <resources>
     <string name="app_name">IndoorNav</string>
-    <string name="title_activity_navigation">NavigationActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="init">Initialize Antenna</string>
+    <string name="not_init">Not Initialized</string>
+    <string name="get_rx_power">Get RX Power</string>
+    <string name="received_power">Received Power</string>
+    <string name="calibrate">Calibrate</string>
+    <string name="average_distance">Average Distance</string>
+    <string name="antenna_delay">Antenna Delay</string>
+    <string name="stat">Distance Stats</string>
+    <string name="test_orientation">Test Orientation</string>
+    <string name="navigation">Navigation</string>
+    <string name="test_dwm1000">Test DWM1000</string>
+    <string name="calibration">Calibration</string>
+    <string name="tracking">Tracking</string>
+    <string name="is_running">Running?</string>
+    <string name="stats">Stats</string>
+    <string name="roll">Roll :</string>
+    <string name="pitch">Pitch :</string>
+    <string name="azimuth">Azimuth :</string>
+    <string name="success_init">Device initialized successfully</string>
+    <string name="fail_init">WARNING: device failed to initialize</string>
+    <string name="warning">WARNING:</string>
+    <string name="device_id">Device ID: 0x%1$x</string>
+    <string name="it">Iteration: %1$d</string>
+    <string name="coor">Coordinates: %1$f, %2$f</string>
 </resources>

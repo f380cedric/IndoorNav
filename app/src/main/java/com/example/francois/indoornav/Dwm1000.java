@@ -77,7 +77,7 @@ abstract class Dwm1000 {
         final Receiver receiver;
         private Define.Channel.CHANNEL channel;
 
-        Config(){
+        Config() {
             spi = new Spi();
             resetIC();
             transmitter = new Transmitter();
@@ -86,7 +86,7 @@ abstract class Dwm1000 {
             updateChannel();
         }
 
-        private void resetIC(){
+        private void resetIC() {
             byte address    = PMSC;
             byte offset   = (byte)0x00;
             byte dataLength = (byte)0x01;
@@ -143,7 +143,7 @@ abstract class Dwm1000 {
             updateChannel();
         }
 
-        private void updateChannel(){
+        private void updateChannel() {
             byte chan[] = new byte[]{(byte)((channel.value << 4)|channel.value)};
             writeDataSpi(CHAN_CTRL, chan, (byte)1);
             byte pllTune[] = new byte[1];
@@ -323,7 +323,7 @@ abstract class Dwm1000 {
 
         class Transmitter extends Channel{
 
-            Transmitter(){
+            Transmitter() {
                 super();
                 updateChannel();
                 updateBitrate();
@@ -394,13 +394,13 @@ abstract class Dwm1000 {
                 writeDataSpi(TX_CAL, (byte) 0x0B, tc, (byte) 1);
                 updateTxPower();
             }
-            private void updateBitrate(){
+            private void updateBitrate() {
                 writeDataSpi(TX_FCTRL, (byte) 1,
                         new byte[]{(byte)((getBitRate().value << 5) | (1<<TR))}, (byte) 1);
                 updateTxPower();
             }
 
-            private void updatePreambleCode(){
+            private void updatePreambleCode() {
                 byte chan[] = readDataSpi(CHAN_CTRL, (byte)2, (byte)2);
                 byte preambleCode = getPreambleCode();
                 chan[0] &= 0x3F;
@@ -410,12 +410,12 @@ abstract class Dwm1000 {
                 writeDataSpi(CHAN_CTRL, (byte)2, chan, (byte)2);
             }
 
-            private void updatePreambleSize(){
+            private void updatePreambleSize() {
                 writeDataSpi(TX_FCTRL, (byte)2,new byte[]{(byte)(getPrf().value |
                         (getPreambleSize().value << 2))}, (byte)1);
             }
 
-            private void updatePrf(){
+            private void updatePrf() {
                    writeDataSpi(TX_FCTRL, (byte)2, new byte[]{(byte)(getPrf().value |
                            (getPreambleSize().value << 2))}, (byte)1);
                 updateTxPower();
@@ -519,7 +519,7 @@ abstract class Dwm1000 {
             private int pac;
             private int sfd;
 
-            Receiver(){
+            Receiver() {
                 super();
                 updateChannel();
                 updateBitrate();
@@ -563,7 +563,7 @@ abstract class Dwm1000 {
 
             }
 
-            private  void updateFrameTimeoutDelay(){
+            private  void updateFrameTimeoutDelay() {
                 byte sysCfg[] = readDataSpi(SYS_CFG, (byte) 0x03, (byte)0x01);
                 sysCfg[0] |= (1<<RXWTOE);
                 ByteBuffer rxfwto = ByteBuffer.allocate(2);
@@ -577,7 +577,7 @@ abstract class Dwm1000 {
                 writeDataSpi(SYS_CFG, (byte) 0x03, sysCfg, (byte)0x01);
             }
 
-            private void updateChannel(){
+            private void updateChannel() {
                 byte rxCtrl[] = new byte[1];
                 switch (getChannel()){
                     case _1: case _2: case _3: case _5:
@@ -590,7 +590,7 @@ abstract class Dwm1000 {
                 writeDataSpi(RF_CONF, (byte)0x0B, rxCtrl, (byte)1);
             }
 
-            private void updateBitrate(){
+            private void updateBitrate() {
                  byte sys[] = new byte[1];
                  ByteBuffer drxTune0b = ByteBuffer.allocate(2);
                  drxTune0b.order(ByteOrder.LITTLE_ENDIAN);
@@ -610,7 +610,7 @@ abstract class Dwm1000 {
                  updateSFDTimeout();
             }
 
-            private void updatePreambleCode(){
+            private void updatePreambleCode() {
                 byte chan[] = readDataSpi(CHAN_CTRL, (byte)3, (byte)1);
                 byte preambleCode = getPreambleCode();
                 chan[0] &= 0x07;
@@ -618,7 +618,7 @@ abstract class Dwm1000 {
                 writeDataSpi(CHAN_CTRL, (byte)3, chan, (byte)1);
             }
 
-            private void updatePreambleSize(){
+            private void updatePreambleSize() {
                 ByteBuffer drxTune1b = ByteBuffer.allocate(2);
                 drxTune1b.order(ByteOrder.LITTLE_ENDIAN);
                 switch (getPreambleSize()){
@@ -637,7 +637,7 @@ abstract class Dwm1000 {
                 updateSFDTimeout();
             }
 
-            private void updatePrf(){
+            private void updatePrf() {
                 byte prf[] = readDataSpi(CHAN_CTRL, (byte)2, (byte)1);
                 prf[0] &= 0xF3;
                 prf[0] |= getPrf().value << RXPRF;
@@ -666,7 +666,7 @@ abstract class Dwm1000 {
                 updatePacSize();
             }
 
-            private void updatePacSize(){
+            private void updatePacSize() {
                 ByteBuffer drxTune2 = ByteBuffer.allocate(4);
                 drxTune2.order(ByteOrder.LITTLE_ENDIAN);
                 switch (getPrf()){
@@ -714,7 +714,7 @@ abstract class Dwm1000 {
                 writeDataSpi(DRX_CONF, (byte)0x08, drxTune2.array(), (byte)4);
             }
 
-            private void updateSFDTimeout(){
+            private void updateSFDTimeout() {
                 ByteBuffer timeout = ByteBuffer.allocate(2);
                 timeout.order(ByteOrder.LITTLE_ENDIAN);
                 timeout.putShort((short)(Integer.parseInt(getPreambleSize().toString().substring(1)) +
@@ -732,18 +732,18 @@ abstract class Dwm1000 {
                 reset();
             }
             void update() {
-                spimInterface.SetConfig(clockPhaseMode,dataOrderSelected.value,clockFreq);
+                mSpi.SetConfig(clockPhaseMode,dataOrderSelected.value,clockFreq);
             }
 
             void set(byte clockPhaseMode, DATAORDER dataOrderSelected, int clockFreq) {
                 setClockPhaseMode(clockPhaseMode);
                 setDataOrderSelected(dataOrderSelected);
                 setClockFreq(clockFreq);
-                spimInterface.SetConfig(this.clockPhaseMode, this.dataOrderSelected.value, this.clockFreq);
+                mSpi.SetConfig(this.clockPhaseMode, this.dataOrderSelected.value, this.clockFreq);
             }
 
             void reset() {
-                spimInterface.Reset();
+                mSpi.Reset();
                 clockPhaseMode      = (byte) 0;
                 dataOrderSelected   = DATAORDER.MSB;
                 clockFreq           = 3000000;
@@ -792,6 +792,7 @@ abstract class Dwm1000 {
     private static final short  ANTENNA_DELAY   = (short)0x8000;
 
     /*                  REGISTERS MAP                */
+
     private static final byte DEV_ID     = (byte)0x00;
     private static final byte EUI        = (byte)0x01;
     private static final byte PANADR     = (byte)0x03;
@@ -804,14 +805,14 @@ abstract class Dwm1000 {
     private static final byte SYS_CTRL   = (byte)0x0D;
     private static final byte SYS_MASK   = (byte)0x0E;
     private static final byte SYS_STATUS = (byte)0x0F;
-            static final byte RX_FINFO   = (byte)0x10;
+    private static final byte RX_FINFO   = (byte)0x10;
     private static final byte RX_BUFFER  = (byte)0x11;
-            static final byte RX_FQUAL   = (byte)0x12;
+    private static final byte RX_FQUAL   = (byte)0x12;
     private static final byte RX_TTCKI   = (byte)0x13;
     private static final byte RX_TTCKO   = (byte)0x14;
             static final byte RX_TIME    = (byte)0x15;
             static final byte TX_TIME    = (byte)0x17;
-    static final byte TX_ANTD    = (byte)0x18;
+            static final byte TX_ANTD    = (byte)0x18;
     private static final byte SYS_STATE  = (byte)0x19;
     private static final byte ACK_RESP_T = (byte)0x1A;
     private static final byte RX_SNIFF   = (byte)0x1D;
@@ -822,7 +823,7 @@ abstract class Dwm1000 {
     private static final byte EXT_SYNC   = (byte)0x24;
     private static final byte ACC_MEM    = (byte)0x25;
     private static final byte GPIO_CTRL  = (byte)0x26;
-    static final byte DRX_CONF   = (byte)0x27;
+    private static final byte DRX_CONF   = (byte)0x27;
     private static final byte RF_CONF    = (byte)0x28;
     private static final byte TX_CAL     = (byte)0x2A;
     private static final byte FS_CTRL    = (byte)0x2B;
@@ -852,16 +853,18 @@ abstract class Dwm1000 {
     private static final int RX_OK              = 0x6400;
     private static final int RX_MUST_CLEAR      = 0x60000;
 
+    private byte[] readWriteBuffer = new byte[64];
 
-    private final FT311SPIMasterInterface spimInterface;
+
+    private final FT311SPIMaster mSpi;
 
     // Constructor
-    Dwm1000(FT311SPIMasterInterface my_spimInterface){
-        spimInterface = my_spimInterface;
+    Dwm1000(FT311SPIMaster spi){
+        mSpi = spi;
     }
 
     // Initialize DWM1000
-    boolean initDwm1000(){
+    boolean initDwm1000() {
         // Reset DWM1000
         config = new Config();
         // Check DWM1000 ID
@@ -898,7 +901,7 @@ abstract class Dwm1000 {
     }
 
     // Send frame over UWB channel
-    void sendFrameUwb(byte[] frame, byte frameLength){
+    void sendFrameUwb(byte[] frame, byte frameLength) {
         // maximum payload length is 125 bytes
         // TX_BUFFER: write data into tx buffer
         writeDataSpi(TX_BUFFER, frame, frameLength);
@@ -966,7 +969,7 @@ abstract class Dwm1000 {
     }
 
     // Disable tranceiver (force idle)
-    void idle(){
+    void idle() {
         byte[] sys_ctrl = new byte[] {(byte)(1<<TRXOFF)};
         writeDataSpi(SYS_CTRL,sys_ctrl,(byte)0x01);
     }
@@ -982,7 +985,7 @@ abstract class Dwm1000 {
     }*/
 
     // Enable UWB Rx
-    private void enableUwbRx(){
+    private void enableUwbRx() {
         // SYS_CTRL: Prepare transmission of a packet
         byte[] sys_ctrl = new byte[] {(byte)0x01}; // set RXENAB bit to start receiving
         writeDataSpi(SYS_CTRL, (byte)0x01,sys_ctrl, (byte)0x01);
@@ -991,20 +994,18 @@ abstract class Dwm1000 {
 
     // Read from SPI
     //  1-octet
-    byte[] readDataSpi(byte address, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized byte[] readDataSpi(byte address, byte dataLength){
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
         readWriteBuffer[0] = address;
         ++numBytes;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
+        mSpi.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 1, numBytes);
     }
     //  2-octet
-    private byte[] readDataSpi(byte address, byte offset, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized private byte[] readDataSpi(byte address, byte offset, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1012,12 +1013,11 @@ abstract class Dwm1000 {
         readWriteBuffer[1] = offset;
         numBytes += 2;
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
+        mSpi.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 2, numBytes);
     }
     //  3-octet
-    byte[] readDataSpi(byte address, short offset, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized byte[] readDataSpi(byte address, short offset, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1028,14 +1028,13 @@ abstract class Dwm1000 {
         numBytes += 3;
 
         // Perform SPI transaction
-        spimInterface.ReadData(numBytes, readWriteBuffer);
+        mSpi.ReadData(numBytes, readWriteBuffer);
         return Arrays.copyOfRange(readWriteBuffer, 3, numBytes);
     }
 
     // Write to SPI
     //  1-octet
-    void writeDataSpi(byte address, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized void writeDataSpi(byte address, byte[] data, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1044,11 +1043,10 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(numBytes, readWriteBuffer);
     }
     //  2-octet
-    private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1059,11 +1057,10 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(numBytes, readWriteBuffer);
     }
     //  3-octet
-    void writeDataSpi(byte address, short offset, byte[] data, byte dataLength){
-        byte[] readWriteBuffer = new byte[64];
+    synchronized void writeDataSpi(byte address, short offset, byte[] data, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1075,7 +1072,7 @@ abstract class Dwm1000 {
 
         System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        spimInterface.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(numBytes, readWriteBuffer);
     }
 
 
@@ -1114,7 +1111,7 @@ abstract class Dwm1000 {
         return 10 * Math.log10((F1*F1 + F2*F2 + F3*F3) / (N * N)) - A;
     }
 
-    private void resetRx(){
+    private void resetRx() {
         byte address    = PMSC;
         byte offset   = (byte)0x03;
         byte dataLength = (byte)0x01;
@@ -1143,7 +1140,7 @@ abstract class Dwm1000 {
         config.spi.set(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 
-    private static int byteArray4ToInt(byte[] bytes){
+    static int byteArray4ToInt(byte[] bytes){
         return (bytes[0] & 0xFF) |
                 (bytes[1] & 0xFF) << 8 |
                 (bytes[2] & 0xFF) << 16 |

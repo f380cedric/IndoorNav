@@ -31,9 +31,9 @@ public class TestOrientationActivity extends Activity
         d.setMaximumFractionDigits(0);
         d.setMinimumFractionDigits(0);
 
-        azimuthText = (TextView) findViewById(R.id.azimuth);
-        pithText = (TextView) findViewById(R.id.pitch);
-        rollText = (TextView) findViewById(R.id.roll);
+        azimuthText = findViewById(R.id.azimuth);
+        pithText = findViewById(R.id.pitch);
+        rollText = findViewById(R.id.roll);
     }
 
     public void updateOrientationDisplay() {

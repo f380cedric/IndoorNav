@@ -1,5 +1,7 @@
 package com.example.francois.indoornav;
 
+import android.os.SystemClock;
+
 import java.util.Arrays;
 
 class Dwm1000Master extends Dwm1000 {
@@ -25,11 +27,11 @@ class Dwm1000Master extends Dwm1000 {
     }
 
     private              double coordinates[]   = {0,0};
-    private static final int BEACONPOS1X        = 0;
-    private static final int BEACONPOS1Y        = 335;
-    private static final int BEACONPOS1Z        = 264;
+    private static final int BEACONPOS1X        = 60;
+    private static final int BEACONPOS1Y        = 321;
+    private static final int BEACONPOS1Z        = 295;
     private static final int BEACONPOS2X        = 1220;
-    private static final int BEACONPOS2Y        = 0;
+    private static final int BEACONPOS2Y        = 46;
     private static final int BEACONPOS2Z        = 225;
     private static final int BEACONPOS3X        = 1220;
     private static final int BEACONPOS3Y        = 699;
@@ -39,8 +41,8 @@ class Dwm1000Master extends Dwm1000 {
 
     private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
 
-    Dwm1000Master(FT311SPIMasterInterface my_spimInterface) {
-        super(my_spimInterface);
+    Dwm1000Master(FT311SPIMaster spi) {
+        super(spi);
 
         for(int i = 0; i < numberSlaves; ++i) {
             messagesArray[i] = new UwbMessages();
@@ -51,18 +53,26 @@ class Dwm1000Master extends Dwm1000 {
         }
     }
 
-    double[] getDistances() {
+    double[] getDistances(){
         long[] allClockTime = new long[6 * messagesArray.length];
+        long [] clockTime;
         for (int i = 0; i < numberSlaves; ++i) {
-            System.arraycopy(ranging(messagesArray[i]),0, allClockTime, i * 6, 6);
+            clockTime = ranging(messagesArray[i]);
+            if (clockTime == null) {
+                return distancemm;
+            }
+            System.arraycopy(clockTime,0, allClockTime, i * 6, 6);
         }
-        return computeCoordinates(compute_distances(allClockTime));
+        return compute_distances(allClockTime);
     }
 
-    private long[] ranging(UwbMessages messages) {
+    private long[] ranging(UwbMessages messages){
         long[] clockTime = new long[6];
         State state = State.POLL_INIT;
-        while (state != State.END) {
+        long startTime = SystemClock.currentThreadTimeMillis();
+        boolean timeOut = false;
+        while (!(state == State.END ||
+                (timeOut = (SystemClock.currentThreadTimeMillis() - startTime > 500)))) {
             switch (state) {
                 case POLL_INIT:
                     sendFrameUwb(messages.masterPoll, (byte) messages.masterPoll.length);
@@ -123,6 +133,10 @@ class Dwm1000Master extends Dwm1000 {
                     }
                     break;
             }
+        }
+        if (timeOut) {
+            idle();
+            clockTime = null;
         }
         return clockTime;
     }
@@ -233,9 +247,12 @@ class Dwm1000Master extends Dwm1000 {
         return coordinates;
     }
 
-    double[] getCoordinates() {
-        computeCoordinates(distancemm);
-        return this.coordinates;
+    double[] getLastCoordinates() {
+        return coordinates;
+    }
+
+    double[] updateCoordinates(){
+        return computeCoordinates(getDistances());
     }
 
 }

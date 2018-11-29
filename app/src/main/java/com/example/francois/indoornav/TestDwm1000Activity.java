@@ -1,47 +1,42 @@
 package com.example.francois.indoornav;
 
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-
-import java.text.DecimalFormat;
+import java.util.Locale;
 
 public class TestDwm1000Activity extends AppCompatActivity {
 
-    private FT311SPIMasterInterface spimInterface;
+    private FT311SPIMaster mSpi;
     private Dwm1000Master dwm1000;
     private TextView textDWM1000ID;
     private TextView textTestBox;
     private TextView textTestBox2;
     private TextView textTestBox3;
     private TextView textTestBox4 ;
-    private Location mytask;
+    private LocationAsyncTask mytask;
     private Switch trackingSwitch;
     private TextView statTextView;
 
-    private DecimalFormat df;
-
-    class Location extends AsyncTask<Void, Double, String> {
+    /*class Location extends AsyncTask<Void, Double, String> {
 
 
         @Override
         protected String doInBackground(Void... voids) {
             double it = 0;
-            double[] distance = new double[3];
+            double[] coordinates = new double[2];
             while (!isCancelled()) {
                 try {
                     //Thread.sleep(500);
-                    distance = dwm1000.getDistances();
+                    coordinates = dwm1000.updateCoordinates();
                 } catch (Exception e) {
                     Log.v("Error:", e.toString());
                 }
-                publishProgress(++it, distance[0], distance[1]);
+                publishProgress(++it, coordinates[0], coordinates[1]);
             }
             return "Done";
         }
@@ -49,8 +44,8 @@ public class TestDwm1000Activity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Double... values) {
             super.onProgressUpdate(values);
-            textTestBox2.setText("Iteration: " + values[0]);
-            textTestBox3.setText("Distances: \n" + values[1] + "\n" + values[2]);
+            textTestBox2.setText(getString(R.string.it, values[0]));
+            textTestBox3.setText(getString(R.string.coor,values[1], values[2]));
         }
 
         @Override
@@ -58,16 +53,17 @@ public class TestDwm1000Activity extends AppCompatActivity {
             super.onPostExecute(values);
             textTestBox3.setText(values);
         }
-    }
+
+
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_dwm1000);
 
-        spimInterface = new FT311SPIMasterInterface(this);
-        dwm1000 = new Dwm1000Master(spimInterface);
-        mytask = new Location();
+        mSpi = new FT311SPIMaster(this);
+        dwm1000 = new Dwm1000Master(mSpi);
 
         textDWM1000ID   = findViewById(R.id.textView7);
         textTestBox     = findViewById(R.id.textView);
@@ -76,21 +72,21 @@ public class TestDwm1000Activity extends AppCompatActivity {
         textTestBox4    = findViewById(R.id.textView16);
         trackingSwitch  = findViewById(R.id.switch1);
         statTextView   = findViewById(R.id.statTextView);
-        df = new DecimalFormat();
-        df.setMaximumFractionDigits(6);
 
+        mytask = new LocationAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
     }
 
     // Button to test DWM1000 connection
     public void testDwm1000Connection(View view){
         if (dwm1000.initDwm1000()){
-            textTestBox.setText("Device initialized succesfully");
+            textTestBox.setText(R.string.success_init);
         }
         else{
-            textTestBox.setText("WARNING: device failed to initialize");
+            textTestBox.setText(R.string.warning + R.string.fail_init);
         }
+
         byte[] deviceId = dwm1000.readDeviceId();
-        textDWM1000ID.setText("Device ID: 0x" + byteArrayToHex(deviceId));
+        textDWM1000ID.setText(getString(R.string.device_id, Dwm1000.byteArray4ToInt(deviceId)));
     }
 
     // Button to explore DWM1000 Environment
@@ -104,7 +100,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
                 case RUNNING:
                     break;
                 case FINISHED:
-                    mytask = new Location();
+                    mytask = new LocationAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
                     mytask.execute();
                     break;
             }
@@ -119,58 +115,33 @@ public class TestDwm1000Activity extends AppCompatActivity {
         textTestBox4.setText(mytask.getStatus().toString());
     }
 
-    // Convert byte array to hex string
-    private String byteArrayToHex(byte[] a) {
-        StringBuilder sb = new StringBuilder(a.length * 2);
-        //for(byte b: a)
-        for (int i = a.length-1; i>=0; i--) {
-            byte b = a[i];
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
-
 
     public void variation(View view){
-        int itmax = 1000;
-        SummaryStatistics coordinate[] = {new SummaryStatistics(),new SummaryStatistics()};
-        double[] coor;
-        int it;
-        for( it = 0; it < itmax; ++it) {
-            coor = dwm1000.getDistances();
-            coordinate[0].addValue(coor[0]);
-            coordinate[1].addValue(coor[1]);
+        int itMax = 1000;
+        SummaryStatistics coordinateStats[] = {new SummaryStatistics(),new SummaryStatistics()};
+        double[] coordinates;
+        for(int it = 0; it < itMax; ++it) {
+            coordinates = dwm1000.updateCoordinates();
+            coordinateStats[0].addValue(coordinates[0]);
+            coordinateStats[1].addValue(coordinates[1]);
         }
-        statTextView.setText(coordinate[0].getMean() + "\n" + coordinate[0].getMin() + "\n" +
-                coordinate[0].getMax() + "\n" + coordinate[0].getStandardDeviation() + "\n\n" +
-                coordinate[1].getMean() + "\n" + coordinate[1].getMin() + "\n" +
-                coordinate[1].getMax() + "\n" + coordinate[1].getStandardDeviation());
+        statTextView.setText(String.format(Locale.getDefault(),
+                "%f\n%f\n%f\n%f\n\n%f\n%f\n%f\n%f", coordinateStats[0].getMean(),
+                coordinateStats[0].getMin(), coordinateStats[0].getMax(),
+                coordinateStats[0].getStandardDeviation(), coordinateStats[1].getMean(),
+                coordinateStats[1].getMin(), coordinateStats[1].getMax(),
+                coordinateStats[1].getStandardDeviation()));
     }
-    // Convert byte to hex string
-    private static String byteToHex(byte a) {
-        return String.format("%02x", a);
-    }
-
-    // Convert 5-element byte array to int
-
-
     @Override
     protected void onResume() {
         super.onResume();
-        spimInterface.ResumeAccessory();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+        mSpi.ResumeAccessory();
     }
 
     @Override
     protected void onDestroy() {
         mytask.cancel(true);
-        spimInterface.DestroyAccessory();
+        mSpi.DestroyAccessory();
         super.onDestroy();
     }
-
-
 }

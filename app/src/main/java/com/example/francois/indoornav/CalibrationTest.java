@@ -7,9 +7,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import java.util.Locale;
+
 public class CalibrationTest extends AppCompatActivity {
 
-    private FT311SPIMasterInterface spimInterface;
+    private FT311SPIMaster mSpi;
     private Dwm1000Master dwm1000;
     private TextView init_textView;
     private TextView power_textView;
@@ -21,8 +23,8 @@ public class CalibrationTest extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_test);
-        spimInterface = new FT311SPIMasterInterface(this);
-        dwm1000 = new Dwm1000Master(spimInterface);
+        mSpi = new FT311SPIMaster(this);
+        dwm1000 = new Dwm1000Master(mSpi);
         init_textView = findViewById(R.id.init_textView);
         power_textView = findViewById(R.id.power_textView);
         distance_textView = findViewById(R.id.distance_textView);
@@ -32,16 +34,18 @@ public class CalibrationTest extends AppCompatActivity {
     }
 
     public void testDwm1000Connection(View view){
+
         if (dwm1000.initDwm1000()){
-            init_textView.setText("Device initialized succesfully");
+            init_textView.setText(R.string.success_init);
         }
         else{
-            init_textView.setText("WARNING: device failed to initialize");
+            init_textView.setText(R.string.fail_init);
         }
     }
 
     public void getRxPower(View view) {
-        power_textView.setText(dwm1000.RxPower() + " dBm");
+        power_textView.setText(String.format(Locale.getDefault(),
+                "%f dBm", dwm1000.RxPower()));
     }
 
     public void calibrate(View view) {
@@ -50,13 +54,14 @@ public class CalibrationTest extends AppCompatActivity {
         byte[] antennaDelay = {(byte)antenna_delay, (byte)(antenna_delay>>8)};
         dwm1000.writeDataSpi(Dwm1000.TX_ANTD, antennaDelay, (byte)0x02);
         dwm1000.writeDataSpi(Dwm1000.LDE_CTRL, (short)0x1804, antennaDelay, (byte)0x02);
+
         double distance = 0;
         int it;
         for( it = 0; it < 1000; ++it) {
             distance += dwm1000.getDistances()[0];
         }
         distance /= it;
-        distance_textView.setText(Double.toString(distance));
+        distance_textView.setText(String.format(Locale.getDefault(),"%f",distance));
     }
 
     public void calibrate30(View view) {
@@ -66,14 +71,15 @@ public class CalibrationTest extends AppCompatActivity {
         for( it = 0; it < itmax; ++it) {
             distance.addValue(dwm1000.getDistances()[0]);
         }
-        distance30_textView.setText(distance.getMean() + "\n" + distance.getMin() + "\n" +
-                distance.getMax() + "\n" + distance.getStandardDeviation());
+        distance30_textView.setText(String.format(Locale.getDefault(),"%f\n%f\n%f\n%f",
+                distance.getMean(), distance.getMin(), distance.getMax(),
+                distance.getStandardDeviation()));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        spimInterface.ResumeAccessory();
+        mSpi.ResumeAccessory();
     }
 
     @Override
@@ -83,7 +89,7 @@ public class CalibrationTest extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        spimInterface.DestroyAccessory();
+        mSpi.DestroyAccessory();
         super.onDestroy();
     }
 
