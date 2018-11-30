@@ -1,4 +1,4 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.test;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -6,8 +6,16 @@ import android.view.View;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.example.francois.indoornav.R;
+import com.example.francois.indoornav.decawave.Dwm1000Master;
+import com.example.francois.indoornav.location.LocationProviderAsyncTask;
+import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.util.PointD;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import java.util.Locale;
+
+import static com.example.francois.indoornav.util.BytesUtils.byteArray4ToInt;
 
 public class TestDwm1000Activity extends AppCompatActivity {
 
@@ -18,7 +26,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
     private TextView textTestBox2;
     private TextView textTestBox3;
     private TextView textTestBox4 ;
-    private LocationAsyncTask mytask;
+    private LocationProviderAsyncTask mytask;
     private Switch trackingSwitch;
     private TextView statTextView;
 
@@ -73,7 +81,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         trackingSwitch  = findViewById(R.id.switch1);
         statTextView   = findViewById(R.id.statTextView);
 
-        mytask = new LocationAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
+        mytask = new LocationProviderAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
     }
 
     // Button to test DWM1000 connection
@@ -82,11 +90,11 @@ public class TestDwm1000Activity extends AppCompatActivity {
             textTestBox.setText(R.string.success_init);
         }
         else{
-            textTestBox.setText(R.string.warning + R.string.fail_init);
+            textTestBox.setText(R.string.fail_init);
         }
 
         byte[] deviceId = dwm1000.readDeviceId();
-        textDWM1000ID.setText(getString(R.string.device_id, Dwm1000.byteArray4ToInt(deviceId)));
+        textDWM1000ID.setText(getString(R.string.device_id, byteArray4ToInt(deviceId)));
     }
 
     // Button to explore DWM1000 Environment
@@ -100,7 +108,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
                 case RUNNING:
                     break;
                 case FINISHED:
-                    mytask = new LocationAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
+                    mytask = new LocationProviderAsyncTask(this, dwm1000, textTestBox2, textTestBox3);
                     mytask.execute();
                     break;
             }
@@ -119,11 +127,12 @@ public class TestDwm1000Activity extends AppCompatActivity {
     public void variation(View view){
         int itMax = 1000;
         SummaryStatistics coordinateStats[] = {new SummaryStatistics(),new SummaryStatistics()};
-        double[] coordinates;
+        PointD coordinates = new PointD();
         for(int it = 0; it < itMax; ++it) {
-            coordinates = dwm1000.updateCoordinates();
-            coordinateStats[0].addValue(coordinates[0]);
-            coordinateStats[1].addValue(coordinates[1]);
+            dwm1000.updateLocation();
+            coordinates.set(dwm1000.getLastLocation());
+            coordinateStats[0].addValue(coordinates.x);
+            coordinateStats[1].addValue(coordinates.y);
         }
         statTextView.setText(String.format(Locale.getDefault(),
                 "%f\n%f\n%f\n%f\n\n%f\n%f\n%f\n%f", coordinateStats[0].getMean(),

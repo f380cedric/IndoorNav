@@ -20,7 +20,6 @@
     <string name="azimuth">Azimuth :</string>
     <string name="success_init">Device initialized successfully</string>
     <string name="fail_init">WARNING: device failed to initialize</string>
-    <string name="warning">WARNING:</string>
     <string name="device_id">Device ID: 0x%1$x</string>
     <string name="it">Iteration: %1$d</string>
     <string name="coor">Coordinates: %1$f, %2$f</string>

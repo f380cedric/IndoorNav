@@ -1,4 +1,4 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.spi;
 
 public interface FT311SPIMasterListener {
     void onDeviceConnected();

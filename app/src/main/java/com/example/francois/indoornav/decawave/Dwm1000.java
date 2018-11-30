@@ -1,11 +1,14 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.decawave;
+
+import com.example.francois.indoornav.spi.FT311SPIMaster;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import static android.os.SystemClock.sleep;
+import static com.example.francois.indoornav.util.BytesUtils.byteArray4ToInt;
 
-abstract class Dwm1000 {
+public abstract class Dwm1000 {
 
     static abstract class Define {
         static abstract class Channel{
@@ -66,10 +69,6 @@ abstract class Dwm1000 {
 
 
     private Config config;
-
-    Config getConfig() {
-        return config;
-    }
 
     class Config {
         final Spi spi;
@@ -203,7 +202,7 @@ abstract class Dwm1000 {
 
             private void setChannel(CHANNEL channel) {
                 this.channel = channel;
-                if (!isValidPreambleCode(this.preambleCode)) {
+                if (isInvalidPreambleCode(this.preambleCode)) {
                     setPreambleCode(this.preambleCode);
                 }
             }
@@ -217,7 +216,7 @@ abstract class Dwm1000 {
 
             void setPrf(PRF prf) {
                 this.prf = prf;
-                if (!isValidPreambleCode(this.preambleCode)) {
+                if (isInvalidPreambleCode(this.preambleCode)) {
                     setPreambleCode(this.preambleCode);
                 }
             }
@@ -266,8 +265,8 @@ abstract class Dwm1000 {
                 return preambleCode;
             }
 
-            private boolean isValidPreambleCode(byte preambleCode) {
-                return validPreambleCode(preambleCode) == preambleCode;
+            private boolean isInvalidPreambleCode(byte preambleCode) {
+                return validPreambleCode(preambleCode) != preambleCode;
             }
 
             private PE validPreambleSize(PE preambleSize) {
@@ -812,7 +811,7 @@ abstract class Dwm1000 {
     private static final byte RX_TTCKO   = (byte)0x14;
             static final byte RX_TIME    = (byte)0x15;
             static final byte TX_TIME    = (byte)0x17;
-            static final byte TX_ANTD    = (byte)0x18;
+            public static final byte TX_ANTD    = (byte)0x18;
     private static final byte SYS_STATE  = (byte)0x19;
     private static final byte ACK_RESP_T = (byte)0x1A;
     private static final byte RX_SNIFF   = (byte)0x1D;
@@ -829,7 +828,7 @@ abstract class Dwm1000 {
     private static final byte FS_CTRL    = (byte)0x2B;
     private static final byte AON        = (byte)0x2C;
     private static final byte OTP_IF     = (byte)0x2D;
-    static final byte LDE_CTRL   = (byte)0x2E;
+    public static final byte LDE_CTRL   = (byte)0x2E;
     private static final byte DIG_DIAG   = (byte)0x2F;
     private static final byte PMSC       = (byte)0x36;
 
@@ -864,7 +863,7 @@ abstract class Dwm1000 {
     }
 
     // Initialize DWM1000
-    boolean initDwm1000() {
+    public boolean initDwm1000() {
         // Reset DWM1000
         config = new Config();
         // Check DWM1000 ID
@@ -895,7 +894,7 @@ abstract class Dwm1000 {
     }
 
     // Read DWM1000 device ID
-    byte[] readDeviceId(){
+    public byte[] readDeviceId(){
         byte dataLength = (byte)DEV_ID_THEOR.length;
         return readDataSpi(DEV_ID,dataLength);
     }
@@ -1034,7 +1033,7 @@ abstract class Dwm1000 {
 
     // Write to SPI
     //  1-octet
-    synchronized void writeDataSpi(byte address, byte[] data, byte dataLength) {
+    public synchronized void writeDataSpi(byte address, byte[] data, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1060,7 +1059,7 @@ abstract class Dwm1000 {
         mSpi.SendData(numBytes, readWriteBuffer);
     }
     //  3-octet
-    synchronized void writeDataSpi(byte address, short offset, byte[] data, byte dataLength) {
+    public synchronized void writeDataSpi(byte address, short offset, byte[] data, byte dataLength) {
         byte numBytes = dataLength;
 
         // Prepare readWriteBuffer for SPI transaction
@@ -1078,7 +1077,7 @@ abstract class Dwm1000 {
 
     // -------------- HELPER FUNCTIONS -------------- //
 
-    double RxPower() {
+    public double RxPower() {
         double A = config.receiver.getPrf() == Define.Channel.PRF._16MHZ ? 113.77:121.74;
         int to_remove = config.receiver.getBitRate() == Define.Channel.BITRATE._110KBPS ? 64:5;
         byte[] cir_pwr = readDataSpi(RX_FQUAL, (byte)6, (byte)2);
@@ -1140,19 +1139,5 @@ abstract class Dwm1000 {
         config.spi.set(clockPhaseMode,dataOrderSelected,clockFreq);
     }
 
-    static int byteArray4ToInt(byte[] bytes){
-        return (bytes[0] & 0xFF) |
-                (bytes[1] & 0xFF) << 8 |
-                (bytes[2] & 0xFF) << 16 |
-                (bytes[3] & 0xFF) << 24;
-    }
 
-    static long byteArray5ToLong(byte[] bytes) {
-        return (long)(bytes[0] & 0xFF) |
-                (long)(bytes[1] & 0xFF) << 8 |
-                (long)(bytes[2] & 0xFF) << 16 |
-                (long)(bytes[3] & 0xFF) << 24 |
-                (long)(bytes[4] & 0xFF) << 32;
-
-    }
 }

@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  ************************************************************************************/
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.util;
 
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
@@ -69,14 +69,13 @@ public class SensorFusion {
     // accelerometer and magnetometer based rotation matrix
     private float[] rotationMatrix = new float[9];
 
-    public static final float EPSILON = 0.000000001f;
+    private static final float EPSILON = 0.000000001f;
     private static final float NS2S = 1.0f / 1000000000.0f;
     private long timestamp;
     private boolean initState = true;
 
     public static final int TIME_CONSTANT = 30;
     public static final float FILTER_COEFFICIENT = 0.98f;
-    private Timer fuseTimer = new Timer();
 
     public SensorFusion() {
 
@@ -97,6 +96,7 @@ public class SensorFusion {
 
         // wait for one second until gyroscope and magnetometer/accelerometer
         // data is initialised then scedule the complementary filter task
+        Timer fuseTimer = new Timer();
         fuseTimer.scheduleAtFixedRate(new calculateFusedOrientationTask(),1000, TIME_CONSTANT);
 
     }

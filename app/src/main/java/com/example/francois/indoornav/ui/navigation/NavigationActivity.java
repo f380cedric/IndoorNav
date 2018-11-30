@@ -1,6 +1,5 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.navigation;
 
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.hardware.Sensor;
@@ -14,6 +13,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.TextView;
+
+import com.example.francois.indoornav.R;
+import com.example.francois.indoornav.decawave.Dwm1000Master;
+import com.example.francois.indoornav.location.ILocationProvider;
+import com.example.francois.indoornav.location.LocationProvider;
+import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.spi.FT311SPIMasterListener;
+import com.example.francois.indoornav.util.PointD;
+import com.example.francois.indoornav.util.SensorFusion;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -24,20 +33,19 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     private NavigationView navigationView;
     private FT311SPIMaster mSpi;
     private Dwm1000Master dwm1000;
-    private Location location;
+    private LocationProvider location;
     private Handler handler;
     private SensorFusion sensorFusion;
     private SensorManager sensorManager;
     private DescriptiveStatistics meanAzimuth;
+    private TextView displayCoordinates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        navigationView = new NavigationView(this, size.x, size.y);
-        setContentView(navigationView);
+        setContentView(R.layout.activity_navigation);
+        navigationView = findViewById(R.id.navigationView);
+        displayCoordinates = findViewById(R.id.displayCoordinates);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
@@ -51,7 +59,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         handler = new Handler(this);
     }
 
-    void registerSensorManagerListeners() {
+    private void registerSensorManagerListeners() {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                 SensorManager.SENSOR_DELAY_UI);
@@ -68,14 +76,11 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     public void updateOrientationDisplay() {
 
         double azimuthValue = sensorFusion.getAzimuth();
-        double pitchValue =  sensorFusion.getPitch();
-        double rollValue =  sensorFusion.getRoll();
         //Log.i("Orientation", azimuthValue + ", " + pitchValue + ", " + rollValue);
         meanAzimuth.addValue(azimuthValue);
         Log.i("Orientation, mean", String.valueOf(meanAzimuth.getMean()));
         navigationView.setOrientation(azimuthValue);
     }
-
 
     @Override
     protected void onResume() {
@@ -110,8 +115,9 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
 
     @Override
     public boolean handleMessage(Message msg) {
-        if (msg.what == Location.SUCCESS) {
-            navigationView.setPositions((double[]) msg.obj);
+        if (msg.what == ILocationProvider.SUCCESS) {
+            navigationView.setPositions((PointD) msg.obj);
+            displayCoordinates.setText(msg.obj.toString());
         }
         return true;
     }
@@ -123,7 +129,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
             dwm1000.initDwm1000();
         }
         if (location == null){
-            location = new Location(handler, dwm1000);
+            location = new LocationProvider(handler, dwm1000);
         }
     }
 

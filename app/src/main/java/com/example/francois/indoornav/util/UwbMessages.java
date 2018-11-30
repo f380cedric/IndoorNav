@@ -1,6 +1,6 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.util;
 
-class UwbMessages {
+public class UwbMessages {
     public byte[] masterPoll;
     public byte[] masterFinal;
     public byte[] slaveResponse;

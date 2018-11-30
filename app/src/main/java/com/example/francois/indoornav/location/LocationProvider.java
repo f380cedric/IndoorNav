@@ -1,44 +1,43 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.location;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
 
-class Location extends HandlerThread {
+public class LocationProvider extends HandlerThread{
     private static final String TAG = "Location";
-    static final int SUCCESS = 1;
-    static final int IOERROR = 2;
     private final Handler uiHandler;
     private volatile boolean update = true;
     private  Handler handler;
-    private Dwm1000Master device;
+    private ILocationProvider mLocationProvider;
     private Runnable task = new Runnable() {
         @Override
         public void run() {
             if (update) {
                 handler.postDelayed(task, 500);
-                Message.obtain(uiHandler, SUCCESS, device.updateCoordinates()).sendToTarget();
+                Message.obtain(uiHandler, mLocationProvider.updateLocation(),
+                        mLocationProvider.getLastLocation()).sendToTarget();
             }
         }
     };
-    Location(Handler uiHandler, Dwm1000Master device) {
+    public LocationProvider(Handler uiHandler, ILocationProvider locationProvider) {
         super(TAG, Process.THREAD_PRIORITY_BACKGROUND);
         this.uiHandler = uiHandler;
-        this.device = device;
+        this.mLocationProvider = locationProvider;
         start();
         handler = new Handler(getLooper());
         handler.post(task);
     }
 
-    void onResume(){
+    public void onResume(){
         if(!update) {
             update = true;
             handler.post(task);
         }
     }
 
-    void onPause() {
+    public void onPause() {
         update = false;
     }
 

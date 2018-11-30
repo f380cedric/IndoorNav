@@ -1,10 +1,16 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.example.francois.indoornav.R;
+import com.example.francois.indoornav.ui.navigation.NavigationActivity;
+import com.example.francois.indoornav.ui.test.CalibrationTest;
+import com.example.francois.indoornav.ui.test.TestDwm1000Activity;
+import com.example.francois.indoornav.ui.test.TestOrientationActivity;
 
 public class MainActivity extends AppCompatActivity {
 

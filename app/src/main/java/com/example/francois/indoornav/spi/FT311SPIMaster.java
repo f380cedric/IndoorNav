@@ -1,4 +1,4 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.spi;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -18,7 +18,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 /******************************FT311 GPIO interface class******************************************/
-class FT311SPIMaster
+public class FT311SPIMaster
 {
 
     private static final String ACTION_USB_PERMISSION =    "com.SPIMasterDemo.USB_PERMISSION";
@@ -47,7 +47,7 @@ class FT311SPIMaster
 
 
     /*constructor*/
-    FT311SPIMaster(Context context){
+    public FT311SPIMaster(Context context){
         super();
         global_context = context;
         /*shall we start a thread here or what*/
@@ -65,18 +65,18 @@ class FT311SPIMaster
         outputstream = null;
     }
 
-    void registerListener(FT311SPIMasterListener listener){
+    public void registerListener(FT311SPIMasterListener listener){
         mListener = listener;
     }
 
-    void unregisterListener(FT311SPIMasterListener listener) {
+    public void unregisterListener(FT311SPIMasterListener listener) {
         if (mListener == listener) {
             mListener = null;
         }
     }
 
     /*reset method*/
-    synchronized int Reset()
+    public synchronized int Reset()
     {
         /*create the packet*/
         writeusbdata[0] = (byte) 0x64;
@@ -85,7 +85,7 @@ class FT311SPIMaster
     }
 
 
-    synchronized int SetConfig(byte clockPhase, byte dataOrder, int clockFreq)
+    public synchronized int SetConfig(byte clockPhase, byte dataOrder, int clockFreq)
     {
         /*check for maximum clock freq, 24Mhz*/
         if(clockFreq > 24000000){
@@ -106,7 +106,7 @@ class FT311SPIMaster
 
 
     /*write data*/
-    synchronized int SendData(byte numBytes, byte[] buffer)
+    public synchronized int SendData(byte numBytes, byte[] buffer)
     {
         int status;
         //status = 0x02; /*error by default*/
@@ -165,7 +165,7 @@ class FT311SPIMaster
 
 
     /*read data*/
-    synchronized int ReadData(byte numBytes, byte[] buffer)
+    public synchronized int ReadData(byte numBytes, byte[] buffer)
     {
         int status;
         /*
@@ -261,7 +261,7 @@ class FT311SPIMaster
     }
 
     /*resume accessory*/
-    void ResumeAccessory()
+    public void ResumeAccessory()
     {
         /*int i = 0;
         HashMap<String, UsbDevice> deviceList = usbmanager.getDeviceList();
@@ -325,7 +325,7 @@ class FT311SPIMaster
     }
 
     /*destroy accessory*/
-    void DestroyAccessory(){
+    public void DestroyAccessory(){
         global_context.unregisterReceiver(mUsbReceiver);
         /*if(accessory_attached)
         {

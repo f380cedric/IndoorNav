@@ -1,4 +1,4 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.test;
 
 import android.app.Activity;
 import android.hardware.Sensor;
@@ -7,6 +7,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import com.example.francois.indoornav.R;
+import com.example.francois.indoornav.util.SensorFusion;
 
 import java.text.DecimalFormat;
 
@@ -36,7 +39,7 @@ public class TestOrientationActivity extends Activity
         rollText = findViewById(R.id.roll);
     }
 
-    public void updateOrientationDisplay() {
+    private void updateOrientationDisplay() {
 
         double azimuthValue = sensorFusion.getAzimuth();
         double pitchValue =  sensorFusion.getPitch();

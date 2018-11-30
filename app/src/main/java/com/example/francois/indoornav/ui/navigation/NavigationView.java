@@ -1,4 +1,4 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.navigation;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,12 +6,15 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.example.francois.indoornav.util.PointD;
 
 class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Callback
 {
@@ -28,24 +31,47 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector mDetector;
 
-    public NavigationView(Context context, int mScreenX, int mScreenY) {
+
+    public NavigationView(Context context) {
         super(context);
+        initSurface();
+    }
+
+    public NavigationView(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+        initSurface();
+    }
+
+    public NavigationView(Context context, AttributeSet attributeSet, int integer) {
+        super(context, attributeSet, integer);
+        initSurface();
+
+    }
+
+    private void initSurface() {
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
-        indoorMap = new IndoorMap(context, mScreenX, mScreenY);
+    }
+
+    private void initMap(Context context, int width, int height) {
+        indoorMap = new IndoorMap(context, width, height);
         maxWidth = indoorMap.getMaxWidth();
         maxHeight = indoorMap.getMaxHeight();
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
         mDetector = new GestureDetector(context, new GestureListener());
     }
 
-    void setPositions(double[] positions) {
-        Log.d("Location received", positions[0] + ", " + positions[1]);
-        indoorMap.setMarkerPos((float)positions[0], (float)positions[1]);
+    void setPositions(PointD positions) {
+        Log.d("Location received", positions.x + ", " + positions.y);
+        if (indoorMap != null) {
+            indoorMap.setMarkerPos(positions.x, positions.y);
+        }
     }
 
     void setOrientation(double orientation) {
-        indoorMap.setMarkerOrientation((float)orientation);
+        if (indoorMap != null) {
+            indoorMap.setMarkerOrientation(orientation);
+        }
     }
 
     @Override
@@ -70,22 +96,23 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
             int y = indoorMap.getMapPosY();
             int w = (int)indoorMap.getWidth();
             int h = (int)indoorMap.getHeight() ;
-            float sX = indoorMap.getMapScaleX();
-            float sY = indoorMap.getMapScaleY();
+            double sX = indoorMap.getMapScaleX();
+            double sY = indoorMap.getMapScaleY();
             IndoorMap.Marker marker = indoorMap.getMarker();
-            float markerCenterX = marker.getCenterX();
-            float markerCenterY = marker.getCenterY();
-            float markerOrientation = marker.getTheta()-45;
-            float markerX = (marker.getX()-x)/sX- markerCenterX;
-            float markerY = (marker.getY()-y)/sY- markerCenterY;
+            double markerCenterX = marker.getCenterX();
+            double markerCenterY = marker.getCenterY();
+            double markerOrientation = marker.getTheta()-45;
+            double markerX = (marker.getX()-x)/sX- markerCenterX;
+            double markerY = (marker.getY()-y)/sY- markerCenterY;
             src.set(x, y,w + x,h + y);
             dst.set(0,0, maxWidth , maxHeight);
             canvas.drawBitmap(indoorMap.getBitmap(), src, dst, null);
 
-            if (dst.contains(markerX, markerY)) {
+            if (dst.contains((float)markerX, (float)markerY)) {
                 Matrix matrix = new Matrix();
-                matrix.setRotate(markerOrientation, markerCenterX, markerCenterY);
-                matrix.postTranslate(markerX, markerY);
+                matrix.setRotate((float)markerOrientation, (float)markerCenterX,
+                        (float)markerCenterY);
+                matrix.postTranslate((float)markerX, (float)markerY);
                 canvas.drawBitmap(marker.getIcon(), matrix, null);
             }
             surfaceHolder.unlockCanvasAndPost(canvas);
@@ -98,6 +125,13 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
         retVal = mDetector.onTouchEvent(motionEvent) || retVal;
         return retVal || super.onTouchEvent(motionEvent);
 
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        initMap(getContext(), MeasureSpec.getSize(widthMeasureSpec),
+                MeasureSpec.getSize(heightMeasureSpec));
+        setMeasuredDimension(maxWidth, maxHeight);
     }
 
     @Override

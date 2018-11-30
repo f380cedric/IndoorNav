@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:theme="@style/AppThemeWithCompass">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,12 +22,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NavigationActivity" />
-        <activity android:name=".TestOrientationActivity" />
-        <activity android:name=".TestDwm1000Activity" />
-        <activity android:name=".CalibrationTest" />
+        <activity android:name=".ui.navigation.NavigationActivity" />
+        <activity android:name=".ui.test.TestOrientationActivity" />
+        <activity android:name=".ui.test.TestDwm1000Activity" />
+        <activity android:name=".ui.test.CalibrationTest" />
         <activity
-            android:name=".USBIntentActivity"
+            android:name=".spi.USBIntentActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
@@ -37,7 +37,6 @@
                 android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
                 android:resource="@xml/accessory_filter" />
         </activity>
-        <activity android:name=".Test"></activity>
     </application>
 
 </manifest>

@@ -1,10 +1,16 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.test;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.example.francois.indoornav.R;
+import com.example.francois.indoornav.decawave.Dwm1000;
+import com.example.francois.indoornav.decawave.Dwm1000Master;
+import com.example.francois.indoornav.spi.FT311SPIMaster;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.util.Locale;

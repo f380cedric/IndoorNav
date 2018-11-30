@@ -1,33 +1,29 @@
-package com.example.francois.indoornav;
+package com.example.francois.indoornav.ui.navigation;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
+
+import com.example.francois.indoornav.R;
 
 class IndoorMap {
-
-    private final Bitmap bitmap;
+    private final Bitmap  bitmap;
     private final int sizeMapX;
     private final int sizeMapY;
-    private float width;
-    private float height;
-    private final int screenX;
-    private final int screenY;
+    private double width;
+    private double height;
     private final int maxWidth;
     private final int maxHeight;
     private int mapPosX;
     private int mapPosY;
-    private float scaleFactor;
-    private final float real2MapX;
-    private final float real2MapY;
+    private double scaleFactor;
+    private final double real2MapX;
+    private final double real2MapY;
     private Marker marker;
 
     IndoorMap(Context context, int myScreenX, int myScreenY) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inScaled = false;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.little_room2, options);
-        screenX = myScreenX;
-        screenY = myScreenY;
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.little_room2);
         sizeMapX = bitmap.getWidth();
         sizeMapY = bitmap.getHeight();
         real2MapX = sizeMapX/1292f;//1290f;
@@ -36,34 +32,34 @@ class IndoorMap {
                 R.drawable.ic_location_arrow),-50,-50, 0);
         width = sizeMapX;
         height = sizeMapY;
-        float ratioScreen = myScreenX/(float)myScreenY;
-        float ratioBitmap = sizeMapX/(float)sizeMapY;
+        double ratioScreen = myScreenX/(double)myScreenY;
+        double ratioBitmap = sizeMapX/(double)sizeMapY;
         if(ratioScreen > ratioBitmap) {
-            maxHeight = screenY;
-            maxWidth = (int)(screenY*ratioBitmap);
+            maxHeight = myScreenY;
+            maxWidth = (int)(myScreenY *ratioBitmap);
         } else {
-            maxWidth = screenX;
-            maxHeight = (int)(screenX/ratioBitmap);
+            maxWidth = myScreenX;
+            maxHeight = (int)(myScreenX /ratioBitmap);
         }
         mapPosX = 0;
         mapPosY = 0;
         setMarkerPos(0,0);
     }
 
-    void panMap(float distanceX, float distanceY){
+    void panMap(double distanceX, double distanceY){
         mapPosX = (int)Math.max(0.f, Math.min(mapPosX + distanceX*width/maxWidth, sizeMapX - width));
         mapPosY = (int)Math.max(0.f, Math.min(mapPosY + distanceY*height/maxHeight, sizeMapY - height));
     }
 
-    void moveMap(float newMapPosX, float newMapPosY){
+    private void moveMap(double newMapPosX, double newMapPosY){
         mapPosX = (int)Math.max(0.f, Math.min(newMapPosX, sizeMapX - width));
         mapPosY = (int)Math.max(0.f, Math.min(newMapPosY, sizeMapY - height));
     }
 
-    void scaleAndFocusMap(float newScaleFactor, float focusX, float focusY) {
+    void scaleAndFocusMap(double newScaleFactor, double focusX, double focusY) {
         scaleFactor = Math.max(1.f, Math.min(scaleFactor * newScaleFactor, 5.f));
-        float oldWidth = width;
-        float oldHeight = height;
+        double oldWidth = width;
+        double oldHeight = height;
         width = (sizeMapX / scaleFactor);
         height = (sizeMapY / scaleFactor);
         moveMap(mapPosX+(focusX*oldWidth-focusX*width)/maxWidth,
@@ -83,14 +79,6 @@ class IndoorMap {
         return mapPosY;
     }
 
-    int getBitMapWidth(){
-        return sizeMapX;
-    }
-
-    int getBitMapHeight(){
-        return sizeMapY;
-    }
-
     int getMaxHeight() {
         return maxHeight;
     }
@@ -99,28 +87,28 @@ class IndoorMap {
         return maxWidth;
     }
 
-    float getWidth() {
+    double getWidth() {
         return width;
     }
 
-    float getHeight() {
+    double getHeight() {
         return height;
     }
 
-    float getMapScaleX() {
+    double getMapScaleX() {
         return width/maxWidth;
     }
 
-    float getMapScaleY() {
+    double getMapScaleY() {
         return height/maxHeight;
     }
 
-    void setMarkerPos(float posX, float posY) {
+    void setMarkerPos(double posX, double posY) {
         marker.setX((posX+70)*real2MapX);
         marker.setY(sizeMapY - (posY+102)*real2MapY);
     }
 
-    void setMarkerOrientation(float theta) {
+    void setMarkerOrientation(double theta) {
         marker.setTheta((int)theta);
     }
 
@@ -130,11 +118,11 @@ class IndoorMap {
 
     class Marker {
         private final Bitmap icon;
-        private float x;
-        private float y;
-        private float theta;
-        private final float centerX;
-        private final float centerY;
+        private double x;
+        private double y;
+        private double theta;
+        private final double centerX;
+        private final double centerY;
         Marker(Bitmap icon, int x, int y, int theta){
             this.icon = icon;
             this.x = x;
@@ -148,35 +136,35 @@ class IndoorMap {
             return icon;
         }
 
-        float getX() {
+        double getX() {
             return x;
         }
 
-        float getY() {
+        double getY() {
             return y;
         }
 
-        float getTheta() {
+        double getTheta() {
             return theta;
         }
 
-        float getCenterX() {
+        double getCenterX() {
             return centerX;
         }
 
-        float getCenterY() {
+        double getCenterY() {
             return centerY;
         }
 
-        private void setX(float x) {
+        private void setX(double x) {
             this.x = x;
         }
 
-        private void setY(float y) {
+        private void setY(double y) {
             this.y = y;
         }
 
-        private void setTheta(float theta) {
+        private void setTheta(double theta) {
             this.theta = theta;
         }
     }
