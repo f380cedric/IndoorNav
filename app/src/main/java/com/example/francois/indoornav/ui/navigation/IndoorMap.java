@@ -20,6 +20,8 @@ class IndoorMap {
     private double scaleFactor;
     private final double real2MapX;
     private final double real2MapY;
+    private final double offsetX;
+    private final double offsetY;
     private Marker marker;
 
     IndoorMap(Context context, int myScreenX, int myScreenY) {
@@ -28,6 +30,8 @@ class IndoorMap {
         sizeMapY = bitmap.getHeight();
         real2MapX = sizeMapX/1486.25;//1292f;//1290f;
         real2MapY = sizeMapY/1643.6;//1429f;//1347f;
+        offsetX = 63;
+        offsetY = 118;
         marker = new Marker(BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.ic_location_arrow),-50,-50, 0);
         width = sizeMapX;
@@ -104,8 +108,8 @@ class IndoorMap {
     }
 
     void setMarkerPos(double posX, double posY) {
-        marker.setX((posX+70)*real2MapX);
-        marker.setY(sizeMapY - (posY+102)*real2MapY);
+        marker.setX((posX+offsetX)*real2MapX);
+        marker.setY(sizeMapY - (posY+offsetY)*real2MapY);
     }
 
     void setMarkerOrientation(double theta) {

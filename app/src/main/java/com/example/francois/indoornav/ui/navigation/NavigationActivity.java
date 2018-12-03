@@ -1,7 +1,6 @@
 package com.example.francois.indoornav.ui.navigation;
 
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -11,7 +10,6 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Display;
 import android.view.WindowManager;
 import android.widget.TextView;
 
