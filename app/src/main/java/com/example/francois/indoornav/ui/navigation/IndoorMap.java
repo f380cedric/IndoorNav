@@ -23,11 +23,11 @@ class IndoorMap {
     private Marker marker;
 
     IndoorMap(Context context, int myScreenX, int myScreenY) {
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.little_room2);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.little_room);
         sizeMapX = bitmap.getWidth();
         sizeMapY = bitmap.getHeight();
-        real2MapX = sizeMapX/1292f;//1290f;
-        real2MapY = sizeMapY/1429f;//1347f;
+        real2MapX = sizeMapX/1486.25;//1292f;//1290f;
+        real2MapY = sizeMapY/1643.6;//1429f;//1347f;
         marker = new Marker(BitmapFactory.decodeResource(context.getResources(),
                 R.drawable.ic_location_arrow),-50,-50, 0);
         width = sizeMapX;
