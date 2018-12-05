@@ -98,7 +98,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                             state = State.POLL_INIT;
                             if (receiveFrameUwb()[0] == messages.slaveResponse[0]) {
                                 clockTime[3] = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
-                                sendFrameUwb(messages.masterFinal, (byte) messages.masterPoll.length);
+                                sendFrameUwb(messages.masterFinal, (byte) messages.masterFinal.length);
                                 state = State.WAIT_FINAL_SEND;
                             }
                             break;
