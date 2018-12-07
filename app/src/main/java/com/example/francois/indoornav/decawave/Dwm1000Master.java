@@ -173,7 +173,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                                 allClockTime[2+numberResponse*2+position*2]
                                         = byteArray5ToLong(Arrays.copyOfRange(data, 1, 6));
                                 allClockTime[3+numberResponse*2+position*2]
-                                        = byteArray5ToLong(Arrays.copyOfRange(data, 6, 12));
+                                        = byteArray5ToLong(Arrays.copyOfRange(data, 6, 11));
                                 ++numberTwr;
                             }
                             break;

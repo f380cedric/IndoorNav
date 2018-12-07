@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class UwbFrame {
-    private final ByteBuffer buffer = ByteBuffer.allocate(127).order(ByteOrder.LITTLE_ENDIAN);
+    private final ByteBuffer buffer = ByteBuffer.allocate(125).order(ByteOrder.LITTLE_ENDIAN);
 
     private int frameLength;
     public final UwbFrameShort uwbFrameShort = new UwbFrameShort();

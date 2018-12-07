@@ -851,8 +851,8 @@ public abstract class Dwm1000 {
 
     /*                 REGISTERS MASK                */
 
-    private static final int RX_ERROR_MASK      = 0x4279000; //SYS_STATUS, length: 4
-    private static final int RX_RESET_MASK      = 0x79000;
+    private static final int RX_ERROR_MASK      = 0x24279000; //SYS_STATUS, length: 4
+    private static final int RX_RESET_MASK      = 0x20279000;
     private static final int RX_OK              = 0x6400;
     private static final int RX_MUST_CLEAR      = 0x60000;
 
