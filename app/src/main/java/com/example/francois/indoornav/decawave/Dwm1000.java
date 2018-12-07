@@ -1,6 +1,7 @@
 package com.example.francois.indoornav.decawave;
 
 import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.util.UwbFrame;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -789,6 +790,9 @@ public abstract class Dwm1000 {
             static final double TIME_UNIT       = 1 / (128 * 499.2 * 1000000);
             static final int    LIGHT_SPEED     = 299792458;
     private static final short  ANTENNA_DELAY   = (short)0x8000;
+    static final short mAddress = 0x1234;
+    static final short mPanId = (short) 0xDECA;
+    static final short mBroadcast = (short) 0xFFFF;
 
     /*                  REGISTERS MAP                */
 
@@ -889,6 +893,16 @@ public abstract class Dwm1000 {
 
         config.receiver.setFrameTimeoutDelay((short)5000);
 
+        byte[] temp = new byte[4];
+        temp[0] = mAddress & 0xFF;
+        temp[1] = (mAddress & 0xFF00) >> 8 ;
+        temp[2] = (byte) (mPanId & 0xFF);
+        temp[3] = (byte) ((mPanId & 0xFF00) >> 8);
+        writeDataSpi(PANADR, temp, (byte) 4);
+        temp[0] = 0x9;
+        writeDataSpi(SYS_CFG, temp, (byte) 1);
+
+
         // End of initialization function
         return true;
     }
@@ -967,6 +981,14 @@ public abstract class Dwm1000 {
         return readDataSpi(RX_BUFFER, frameLength);
     }
 
+    void receiveFrameUwb(UwbFrame frame) {
+        byte[] rx_finfo = readDataSpi(RX_FINFO, (byte)0x01);
+        byte frameLength = (byte)((rx_finfo[0]&~(1<<7))-0x02); // -2 bytes for CRC
+
+        // RX_BUFFER: Read received frame
+        frame.setFrame(readDataSpi(RX_BUFFER, frameLength));
+    }
+
     // Disable tranceiver (force idle)
     void idle() {
         byte[] sys_ctrl = new byte[] {(byte)(1<<TRXOFF)};
@@ -984,7 +1006,7 @@ public abstract class Dwm1000 {
     }*/
 
     // Enable UWB Rx
-    private void enableUwbRx() {
+    void enableUwbRx() {
         // SYS_CTRL: Prepare transmission of a packet
         byte[] sys_ctrl = new byte[] {(byte)0x01}; // set RXENAB bit to start receiving
         writeDataSpi(SYS_CTRL, (byte)0x01,sys_ctrl, (byte)0x01);
