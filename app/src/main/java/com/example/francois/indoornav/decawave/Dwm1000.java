@@ -1014,84 +1014,71 @@ public abstract class Dwm1000 {
     // Read from SPI
     //  1-octet
     synchronized byte[] readDataSpi(byte address, byte dataLength){
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
         readWriteBuffer[0] = address;
-        ++numBytes;
+        ++dataLength;
+
         // Perform SPI transaction
-        mSpi.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 1, numBytes);
+        mSpi.ReadData(dataLength, readWriteBuffer);
+        return Arrays.copyOfRange(readWriteBuffer, 1, dataLength);
     }
     //  2-octet
     synchronized private byte[] readDataSpi(byte address, byte offset, byte dataLength) {
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
         readWriteBuffer[0] = (byte)(address | 0x40);
         readWriteBuffer[1] = offset;
-        numBytes += 2;
+        dataLength += 2;
+
         // Perform SPI transaction
-        mSpi.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 2, numBytes);
+        mSpi.ReadData(dataLength, readWriteBuffer);
+        return Arrays.copyOfRange(readWriteBuffer, 2, dataLength);
     }
     //  3-octet
     synchronized byte[] readDataSpi(byte address, short offset, byte dataLength) {
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
-
         readWriteBuffer[0] = (byte)(address | 0x40);
         readWriteBuffer[1] = (byte)(offset | 0x80);
         readWriteBuffer[2] = (byte)(offset >> 7);
-        numBytes += 3;
+        dataLength += 3;
 
         // Perform SPI transaction
-        mSpi.ReadData(numBytes, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 3, numBytes);
+        mSpi.ReadData(dataLength, readWriteBuffer);
+        return Arrays.copyOfRange(readWriteBuffer, 3, dataLength);
     }
 
     // Write to SPI
     //  1-octet
     public synchronized void writeDataSpi(byte address, byte[] data, byte dataLength) {
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
         readWriteBuffer[0] = (byte)(address | 0x80);
-        ++numBytes;
+        ++dataLength;
+        System.arraycopy(data, 0, readWriteBuffer, 1, dataLength-1);
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        mSpi.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(dataLength, readWriteBuffer);
     }
     //  2-octet
     synchronized private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength) {
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
-
         readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
         readWriteBuffer[1] = offset;
-        numBytes += 2;
+        dataLength += 2;
+        System.arraycopy(data, 0, readWriteBuffer, 2, dataLength-2);
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        mSpi.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(dataLength, readWriteBuffer);
     }
     //  3-octet
     public synchronized void writeDataSpi(byte address, short offset, byte[] data, byte dataLength) {
-        byte numBytes = dataLength;
-
         // Prepare readWriteBuffer for SPI transaction
-
         readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
         readWriteBuffer[1] = (byte)(offset | 0x80);
         readWriteBuffer[2] = (byte)(offset >> 7);
-        numBytes += 3;
+        dataLength += 3;
+        System.arraycopy(data, 0, readWriteBuffer, 3, dataLength-3);
 
-        System.arraycopy(data, 0, readWriteBuffer, numBytes - dataLength, dataLength);
         // Perform SPI transaction
-        mSpi.SendData(numBytes, readWriteBuffer);
+        mSpi.SendData(dataLength, readWriteBuffer);
     }
 
 
