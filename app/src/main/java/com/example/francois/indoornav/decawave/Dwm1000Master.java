@@ -43,19 +43,8 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     }
 
     private PointD coordinates = new PointD();
-    /*private static final int BEACONPOS1X = 60;
-    private static final int BEACONPOS1Y = 321;
-    private static final int BEACONPOS1Z = 295;
-    private static final int BEACONPOS2X = 1220;
-    private static final int BEACONPOS2Y = 46;
-    private static final int BEACONPOS2Z = 225;
-    private static final int BEACONPOS3X = 1220;
-    private static final int BEACONPOS3Y = 699;
-    private static final int BEACONPOS3Z = 155;*/
 
     private static final int TAGZ = 155;
-
-    //private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
 
     public Dwm1000Master(FT311SPIMaster spi) {
         super(spi);
@@ -85,8 +74,9 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
         State state = State.POLL_INIT;
         long startTime = 0;
         byte[] data;
-        boolean waiting = false;
+        boolean waiting = true;
         int position;
+        long wait;
         numberTwr = 0;
         for (int i = 0; i < beaconAddress.length; ++i) {
             beaconAddress[i] = (short) 0xFFFF;
@@ -102,8 +92,8 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                     break;
                 case WAIT_POLL_SEND:
                     if (checkFrameSent()) {
+                        startTime = SystemClock.elapsedRealtime();
                         allClockTime[0] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
-                        startTime = SystemClock.currentThreadTimeMillis();
                         state = State.WAIT_RESPONSE;
                     }
                     break;
@@ -116,6 +106,8 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                                     slaveMessage.uwbFrameShort.getDstAddr() == mAddress &&
                                     slaveMessage.uwbFrameShort.getDstPanId() == mPanId &&
                                     (data = slaveMessage.uwbFrameShort.getData())[0] == 0x01) {
+                                allClockTime[3+numberResponse*2]
+                                        = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
                                 beaconAddress[numberResponse]
                                         = slaveMessage.uwbFrameShort.getSrcAddr();
                                 beaconCoordinates[numberResponse][0]
@@ -126,8 +118,6 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                                         = byteArray4ToInt(Arrays.copyOfRange(data, 9, 13));
                                 allClockTime[2+numberResponse*2]
                                         = byteArray5ToLong(Arrays.copyOfRange(data, 13, 18));
-                                allClockTime[3+numberResponse*2]
-                                        = byteArray5ToLong(readDataSpi(RX_TIME, (byte) 0x05));
                                 ++numberResponse;
                             }
                             break;
@@ -141,12 +131,21 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                             waiting = true;
                             break;
                     }
-                    if(SystemClock.currentThreadTimeMillis() - startTime < 120
+                    if(SystemClock.elapsedRealtime() - startTime < 60
                             && numberResponse < 6) {
                         if(!waiting) enableUwbRx();
                     } else {
                         if(waiting) idle();
-                        if(numberResponse < 3) return allClockTime;
+                        if(numberResponse < 3) {
+                            return allClockTime;
+                        }
+                         if((wait = startTime + 60 - SystemClock.elapsedRealtime()) > 0) {
+                             try {
+                                 Thread.sleep(wait);
+                             } catch (InterruptedException e) {
+                                 return allClockTime;
+                             }
+                         }
                         sendFrameUwb(masterFinal.getFrame(),
                                 (byte) masterFinal.uwbFrameShort.getFrameLength());
                         state = State.WAIT_FINAL_SEND;
@@ -154,8 +153,8 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                     break;
                 case WAIT_FINAL_SEND:
                     if (checkFrameSent()) {
+                        startTime = SystemClock.elapsedRealtime();
                         allClockTime[1] = byteArray5ToLong(readDataSpi(TX_TIME, (byte) 0x05));
-                        startTime = SystemClock.currentThreadTimeMillis();
                         state = State.GET_TIMES;
                     }
                     break;
@@ -187,7 +186,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                             waiting = true;
                             break;
                     }
-                    if(SystemClock.currentThreadTimeMillis() - startTime < 120
+                    if(SystemClock.elapsedRealtime() - startTime < 60
                             && numberTwr < numberResponse) {
                         if(!waiting) enableUwbRx();
                     } else {
@@ -225,7 +224,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
                     estimated_power * correctivePol[3] +
                     correctivePol[4]);
             distance *= 100;
-            int deltaH = beaconCoordinates[i][3] - TAGZ;
+            int deltaH = beaconCoordinates[i][2] - TAGZ;
             this.distancemm[i] = Math.sqrt(distance * distance - deltaH * deltaH);
         }
         return distancemm;

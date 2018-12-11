@@ -891,8 +891,6 @@ public abstract class Dwm1000 {
         // NLOS CONFIGURATION
         //byte[] lde_cfg2 = {(byte)0x03, (byte)0x00};
 
-        config.receiver.setFrameTimeoutDelay((short)5000);
-
         byte[] temp = new byte[4];
         temp[0] = mAddress & 0xFF;
         temp[1] = (mAddress & 0xFF00) >> 8 ;
