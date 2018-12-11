@@ -22,8 +22,6 @@ import com.example.francois.indoornav.spi.FT311SPIMasterListener;
 import com.example.francois.indoornav.util.PointD;
 import com.example.francois.indoornav.util.SensorFusion;
 
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 
 public class NavigationActivity extends AppCompatActivity implements Handler.Callback,
         FT311SPIMasterListener, SensorEventListener {
@@ -35,7 +33,6 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     private Handler handler;
     private SensorFusion sensorFusion;
     private SensorManager sensorManager;
-    private DescriptiveStatistics meanAzimuth;
     private TextView displayCoordinates;
 
     @Override
@@ -50,7 +47,6 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         registerSensorManagerListeners();
         sensorFusion = new SensorFusion();
         sensorFusion.setMode(SensorFusion.Mode.FUSION);
-        meanAzimuth = new DescriptiveStatistics(30);
 
         mSpi = new FT311SPIMaster(this);
         mSpi.registerListener(this);
@@ -72,11 +68,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     }
 
     public void updateOrientationDisplay() {
-
         double azimuthValue = sensorFusion.getAzimuth();
-        //Log.i("Orientation", azimuthValue + ", " + pitchValue + ", " + rollValue);
-        meanAzimuth.addValue(azimuthValue);
-        Log.i("Orientation, mean", String.valueOf(meanAzimuth.getMean()));
         navigationView.setOrientation(azimuthValue);
     }
 
