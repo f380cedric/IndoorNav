@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -75,6 +76,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     @Override
     protected void onResume() {
         super.onResume();
+        navigationView.setVisibility(View.VISIBLE);
         registerSensorManagerListeners();
         mSpi.ResumeAccessory();
         if(location != null) {
@@ -84,6 +86,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
 
     @Override
     protected void onPause() {
+        navigationView.setVisibility(View.INVISIBLE);
         sensorManager.unregisterListener(this);
         if (location != null) {
             location.onPause();
