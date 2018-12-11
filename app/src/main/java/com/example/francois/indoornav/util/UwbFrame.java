@@ -27,19 +27,23 @@ public class UwbFrame {
     }
 
     public class UwbFrameShort {
-        private final ByteBuffer fc = (ByteBuffer) buffer.slice().limit(2);
-        private final ByteBuffer seq = (ByteBuffer) ((ByteBuffer)buffer.position(2)).slice().limit(1);
-        private final ByteBuffer dstPanId = (ByteBuffer) ((ByteBuffer)buffer.position(3)).slice().limit(2);
-        private final ByteBuffer dstAddr = (ByteBuffer) ((ByteBuffer)buffer.position(5)).slice().limit(2);
-        private final ByteBuffer srcAddr = (ByteBuffer) ((ByteBuffer)buffer.position(7)).slice().limit(2);
-        private final ByteBuffer data = ((ByteBuffer)buffer.position(9)).slice();
+        private final ByteBuffer fc = (ByteBuffer) buffer.slice()
+                .order(ByteOrder.LITTLE_ENDIAN).limit(2);
+        private final ByteBuffer seq = (ByteBuffer) ((ByteBuffer)buffer.position(2)).slice()
+                .order(ByteOrder.LITTLE_ENDIAN).limit(1);
+        private final ByteBuffer dstPanId = (ByteBuffer) ((ByteBuffer)buffer.position(3)).slice()
+                .order(ByteOrder.LITTLE_ENDIAN).limit(2);
+        private final ByteBuffer dstAddr = (ByteBuffer) ((ByteBuffer)buffer.position(5)).slice()
+                .order(ByteOrder.LITTLE_ENDIAN).limit(2);
+        private final ByteBuffer srcAddr = (ByteBuffer) ((ByteBuffer)buffer.position(7)).slice()
+                .order(ByteOrder.LITTLE_ENDIAN).limit(2);
+        private final ByteBuffer data = ((ByteBuffer)buffer.position(9)).slice()
+                .order(ByteOrder.LITTLE_ENDIAN);
         private final int headerLength = 9;
-        private int dataLenght;
 
 
         public void setData(byte[] data) {
             ((ByteBuffer)this.data.position(0)).put(data);
-            dataLenght = data.length;
             frameLength = headerLength + data.length;
         }
 
@@ -90,7 +94,7 @@ public class UwbFrame {
         }
 
         public byte[] getData() {
-            byte[] dataArray = new byte[dataLenght];
+            byte[] dataArray = new byte[frameLength - headerLength];
             ((ByteBuffer)data.position(0)).get(dataArray);
             return dataArray;
         }
@@ -100,7 +104,7 @@ public class UwbFrame {
         }
 
         public int getFrameLength() {
-            return frameLength = headerLength + dataLenght;
+            return frameLength = frameLength < headerLength? headerLength:frameLength;
         }
     }
 
