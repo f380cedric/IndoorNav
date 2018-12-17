@@ -20,6 +20,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     private FT_4222_Device mFT4222Device;
     private FT_4222_Spi_Master mSpi;
     private SpiMasterListener mListener;
+    private boolean listening = false;
 
     public FT4222HSpiMaster(Context context) {
         this(context, null);
@@ -35,8 +36,9 @@ public class FT4222HSpiMaster implements SpiMaster {
         if (mSpi == null && getManager()) {
             if (mManager.createDeviceInfoList(mContext) > 0) {
                 mManager.setUsbRegisterBroadcast(false);
-                IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+                IntentFilter filter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED);
                 mContext.registerReceiver(mUsbReceiver, filter);
+                listening = true;
                 mDevice = mManager.openByIndex(mContext, 0);
                 mFT4222Device = new FT_4222_Device(mDevice);
                 int status = mFT4222Device.init();
@@ -58,7 +60,10 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     public void close() {
-        mContext.unregisterReceiver(mUsbReceiver);
+        if (listening) {
+            mContext.unregisterReceiver(mUsbReceiver);
+            listening = false;
+        }
         if (mListener != null) {
             mListener.onDeviceDisconnected();
         }
@@ -89,7 +94,7 @@ public class FT4222HSpiMaster implements SpiMaster {
         public void onReceive(Context context, Intent intent)
         {
             String action = intent.getAction();
-            if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action))
+            if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
             {
                 close();
             }
