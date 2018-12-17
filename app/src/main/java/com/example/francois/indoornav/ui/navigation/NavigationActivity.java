@@ -18,17 +18,17 @@ import com.example.francois.indoornav.R;
 import com.example.francois.indoornav.decawave.Dwm1000Master;
 import com.example.francois.indoornav.location.ILocationProvider;
 import com.example.francois.indoornav.location.LocationProvider;
-import com.example.francois.indoornav.spi.FT311SPIMaster;
-import com.example.francois.indoornav.spi.FT311SPIMasterListener;
+import com.example.francois.indoornav.spi.FT4222HSpiMaster;
+import com.example.francois.indoornav.spi.SpiMasterListener;
 import com.example.francois.indoornav.util.PointD;
 import com.example.francois.indoornav.util.SensorFusion;
 
 
 public class NavigationActivity extends AppCompatActivity implements Handler.Callback,
-        FT311SPIMasterListener, SensorEventListener {
+        SpiMasterListener, SensorEventListener {
 
     private NavigationView navigationView;
-    private FT311SPIMaster mSpi;
+    private FT4222HSpiMaster mSpi;
     private Dwm1000Master dwm1000;
     private LocationProvider location;
     private Handler handler;
@@ -48,9 +48,8 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         registerSensorManagerListeners();
         sensorFusion = new SensorFusion();
         sensorFusion.setMode(SensorFusion.Mode.FUSION);
+        mSpi = new FT4222HSpiMaster(this, this);
 
-        mSpi = new FT311SPIMaster(this);
-        mSpi.registerListener(this);
         handler = new Handler(this);
     }
 
@@ -78,7 +77,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         super.onResume();
         navigationView.setVisibility(View.VISIBLE);
         registerSensorManagerListeners();
-        mSpi.ResumeAccessory();
+        mSpi.open();
         if(location != null) {
             location.onResume();
         }
@@ -97,12 +96,13 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     @Override
     protected void onDestroy() {
         mSpi.unregisterListener(this);
+        handler.removeCallbacksAndMessages(null);
         if (location != null) {
             location.quit();
             location.interrupt();
             location = null;
         }
-        mSpi.DestroyAccessory();
+        mSpi.close();
         super.onDestroy();
     }
 
@@ -119,7 +119,13 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     public void onDeviceConnected(){
         if(dwm1000 == null) {
             dwm1000 = new Dwm1000Master(mSpi);
-            dwm1000.initDwm1000();
+            Thread t = new Thread(() -> dwm1000.initDwm1000());
+            t.start();
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         if (location == null){
             location = new LocationProvider(handler, dwm1000);
@@ -148,7 +154,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
             location = null;
         }
         dwm1000 = null;
-        mSpi.ResumeAccessory();
+        mSpi.open();
     }
 
     @Override

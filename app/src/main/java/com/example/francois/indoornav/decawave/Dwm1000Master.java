@@ -3,7 +3,7 @@ package com.example.francois.indoornav.decawave;
 import android.os.SystemClock;
 
 import com.example.francois.indoornav.location.ILocationProvider;
-import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.spi.FT4222HSpiMaster;
 import com.example.francois.indoornav.util.PointD;
 import com.example.francois.indoornav.util.UwbMessages;
 
@@ -49,7 +49,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
 
     private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
 
-    public Dwm1000Master(FT311SPIMaster spi) {
+    public Dwm1000Master(FT4222HSpiMaster spi) {
         super(spi);
 
         for (int i = 0; i < numberSlaves; ++i) {

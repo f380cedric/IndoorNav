@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.example.francois.indoornav.R;
 import com.example.francois.indoornav.decawave.Dwm1000Master;
 import com.example.francois.indoornav.location.LocationProviderAsyncTask;
-import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.spi.FT4222HSpiMaster;
 import com.example.francois.indoornav.util.PointD;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -19,7 +19,7 @@ import static com.example.francois.indoornav.util.BytesUtils.byteArray4ToInt;
 
 public class TestDwm1000Activity extends AppCompatActivity {
 
-    private FT311SPIMaster mSpi;
+    private FT4222HSpiMaster mSpi;
     private Dwm1000Master dwm1000;
     private TextView textDWM1000ID;
     private TextView textTestBox;
@@ -70,7 +70,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_dwm1000);
 
-        mSpi = new FT311SPIMaster(this);
+        mSpi = new FT4222HSpiMaster(this);
         dwm1000 = new Dwm1000Master(mSpi);
 
         textDWM1000ID   = findViewById(R.id.textView7);
@@ -144,13 +144,13 @@ public class TestDwm1000Activity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mSpi.ResumeAccessory();
+        mSpi.open();
     }
 
     @Override
     protected void onDestroy() {
         mytask.cancel(true);
-        mSpi.DestroyAccessory();
+        mSpi.close();
         super.onDestroy();
     }
 }

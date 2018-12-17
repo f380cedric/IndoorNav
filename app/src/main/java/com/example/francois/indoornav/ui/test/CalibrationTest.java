@@ -9,7 +9,7 @@ import android.widget.TextView;
 import com.example.francois.indoornav.R;
 import com.example.francois.indoornav.decawave.Dwm1000;
 import com.example.francois.indoornav.decawave.Dwm1000Master;
-import com.example.francois.indoornav.spi.FT311SPIMaster;
+import com.example.francois.indoornav.spi.FT4222HSpiMaster;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
@@ -17,7 +17,7 @@ import java.util.Locale;
 
 public class CalibrationTest extends AppCompatActivity {
 
-    private FT311SPIMaster mSpi;
+    private FT4222HSpiMaster mSpi;
     private Dwm1000Master dwm1000;
     private TextView init_textView;
     private TextView power_textView;
@@ -29,7 +29,7 @@ public class CalibrationTest extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration_test);
-        mSpi = new FT311SPIMaster(this);
+        mSpi = new FT4222HSpiMaster(this, null);
         dwm1000 = new Dwm1000Master(mSpi);
         init_textView = findViewById(R.id.init_textView);
         power_textView = findViewById(R.id.power_textView);
@@ -85,7 +85,7 @@ public class CalibrationTest extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mSpi.ResumeAccessory();
+        mSpi.open();
     }
 
     @Override
@@ -95,7 +95,7 @@ public class CalibrationTest extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        mSpi.DestroyAccessory();
+        mSpi.close();
         super.onDestroy();
     }
 

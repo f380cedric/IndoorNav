@@ -1,7 +1,7 @@
 package com.example.francois.indoornav.decawave;
 
-import com.example.francois.indoornav.spi.FT311SPIMaster;
-
+import com.example.francois.indoornav.spi.FT4222HSpiMaster;
+import com.ftdi.j2xx.ft4222.FT_4222_Defines;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -54,16 +54,6 @@ public abstract class Dwm1000 {
                 }
             }
 
-        }
-        static abstract class Spi {
-            enum DATAORDER {
-                MSB((byte) 0), LSB((byte) 1);
-                final byte value;
-
-                DATAORDER(byte numVal) {
-                    this.value = numVal;
-                }
-            }
         }
     }
 
@@ -722,66 +712,32 @@ public abstract class Dwm1000 {
             }
         }
 
-        class Spi extends Define.Spi {
-            private byte clockPhaseMode      = (byte) 0;
-            private DATAORDER dataOrderSelected   = DATAORDER.MSB;
-            private int clockFreq            = 3000000;
+        class Spi {
+            int ioLine          = FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE;
+            int cpol            = FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW;
+            int cpha            = FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING;
+            int clockDivider    = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_8;
+            byte ssoMap         = 1;
 
             Spi(){
                 reset();
             }
             void update() {
-                mSpi.SetConfig(clockPhaseMode,dataOrderSelected.value,clockFreq);
-            }
-
-            void set(byte clockPhaseMode, DATAORDER dataOrderSelected, int clockFreq) {
-                setClockPhaseMode(clockPhaseMode);
-                setDataOrderSelected(dataOrderSelected);
-                setClockFreq(clockFreq);
-                mSpi.SetConfig(this.clockPhaseMode, this.dataOrderSelected.value, this.clockFreq);
+                mSpi.init(ioLine, clockDivider, cpol, cpha, ssoMap);
             }
 
             void reset() {
-                mSpi.Reset();
-                clockPhaseMode      = (byte) 0;
-                dataOrderSelected   = DATAORDER.MSB;
-                clockFreq           = 3000000;
+                mSpi.reset();
+                ioLine          = FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE;
+                cpol            = FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW;
+                cpha            = FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING;
+                clockDivider    = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_8;
+                ssoMap          = 1;
                 update();
+                mSpi.setDrivingStrength(FT_4222_Defines.SPI_DrivingStrength.DS_4MA,
+                        FT_4222_Defines.SPI_DrivingStrength.DS_12MA,
+                        FT_4222_Defines.SPI_DrivingStrength.DS_4MA);
             }
-
-            void setClockPhaseMode(byte clockPhaseMode) {
-                if (clockPhaseMode < 0 || clockPhaseMode > 3){
-                    clockPhaseMode = 0;
-                }
-                this.clockPhaseMode = clockPhaseMode;
-            }
-
-            void setDataOrderSelected(DATAORDER dataOrderSelected) {
-                this.dataOrderSelected = dataOrderSelected;
-            }
-
-            void setClockFreq(int clockFreq) {
-                if (clockFreq < 3000000) {
-                    clockFreq = 3000000;
-                }
-                else if (clockFreq > 18000000) {
-                    clockFreq = 18000000;
-                }
-                this.clockFreq = clockFreq;
-            }
-
-            byte getClockPhaseMode() {
-                return clockPhaseMode;
-            }
-
-            DATAORDER getDataOrderSelected() {
-                return dataOrderSelected;
-            }
-
-            int getClockFreq(){
-                return clockFreq;
-            }
-
         }
     }
 
@@ -852,13 +808,15 @@ public abstract class Dwm1000 {
     private static final int RX_OK              = 0x6400;
     private static final int RX_MUST_CLEAR      = 0x60000;
 
-    private byte[] readWriteBuffer = new byte[64];
+    private byte[] readBuffer   = new byte[64];
+    private byte[] writeBuffer  = new byte[64];
+    private int[] dummy         = new int[1];
 
 
-    private final FT311SPIMaster mSpi;
+    private final FT4222HSpiMaster mSpi;
 
     // Constructor
-    Dwm1000(FT311SPIMaster spi){
+    Dwm1000(FT4222HSpiMaster spi){
         mSpi = spi;
     }
 
@@ -995,70 +953,70 @@ public abstract class Dwm1000 {
     //  1-octet
     synchronized byte[] readDataSpi(byte address, byte dataLength){
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = address;
+        writeBuffer[0] = address;
         ++dataLength;
 
         // Perform SPI transaction
-        mSpi.ReadData(dataLength, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 1, dataLength);
+        mSpi.singleReadWrite(readBuffer, writeBuffer, dataLength, dummy, true);
+        return Arrays.copyOfRange(readBuffer, 1, dataLength);
     }
     //  2-octet
     synchronized private byte[] readDataSpi(byte address, byte offset, byte dataLength) {
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x40);
-        readWriteBuffer[1] = offset;
+        writeBuffer[0] = (byte)(address | 0x40);
+        writeBuffer[1] = offset;
         dataLength += 2;
 
         // Perform SPI transaction
-        mSpi.ReadData(dataLength, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 2, dataLength);
+        mSpi.singleReadWrite(readBuffer, writeBuffer, dataLength, dummy, true);
+        return Arrays.copyOfRange(readBuffer, 2, dataLength);
     }
     //  3-octet
     synchronized byte[] readDataSpi(byte address, short offset, byte dataLength) {
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x40);
-        readWriteBuffer[1] = (byte)(offset | 0x80);
-        readWriteBuffer[2] = (byte)(offset >> 7);
+        writeBuffer[0] = (byte)(address | 0x40);
+        writeBuffer[1] = (byte)(offset | 0x80);
+        writeBuffer[2] = (byte)(offset >> 7);
         dataLength += 3;
 
         // Perform SPI transaction
-        mSpi.ReadData(dataLength, readWriteBuffer);
-        return Arrays.copyOfRange(readWriteBuffer, 3, dataLength);
+        mSpi.singleReadWrite(readBuffer, writeBuffer, dataLength, dummy, true);
+        return Arrays.copyOfRange(readBuffer, 3, dataLength);
     }
 
     // Write to SPI
     //  1-octet
     public synchronized void writeDataSpi(byte address, byte[] data, byte dataLength) {
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x80);
+        writeBuffer[0] = (byte)(address | 0x80);
         ++dataLength;
-        System.arraycopy(data, 0, readWriteBuffer, 1, dataLength-1);
+        System.arraycopy(data, 0, writeBuffer, 1, dataLength-1);
 
         // Perform SPI transaction
-        mSpi.SendData(dataLength, readWriteBuffer);
+        mSpi.singleWrite(writeBuffer, dataLength, dummy, true);
     }
     //  2-octet
     synchronized private void writeDataSpi(byte address, byte offset, byte[] data, byte dataLength) {
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
-        readWriteBuffer[1] = offset;
+        writeBuffer[0] = (byte)(address | 0x80 | 0x40);
+        writeBuffer[1] = offset;
         dataLength += 2;
-        System.arraycopy(data, 0, readWriteBuffer, 2, dataLength-2);
+        System.arraycopy(data, 0, writeBuffer, 2, dataLength-2);
 
         // Perform SPI transaction
-        mSpi.SendData(dataLength, readWriteBuffer);
+        mSpi.singleWrite(writeBuffer, dataLength, dummy, true);
     }
     //  3-octet
     public synchronized void writeDataSpi(byte address, short offset, byte[] data, byte dataLength) {
         // Prepare readWriteBuffer for SPI transaction
-        readWriteBuffer[0] = (byte)(address | 0x80 | 0x40);
-        readWriteBuffer[1] = (byte)(offset | 0x80);
-        readWriteBuffer[2] = (byte)(offset >> 7);
+        writeBuffer[0] = (byte)(address | 0x80 | 0x40);
+        writeBuffer[1] = (byte)(offset | 0x80);
+        writeBuffer[2] = (byte)(offset >> 7);
         dataLength += 3;
-        System.arraycopy(data, 0, readWriteBuffer, 3, dataLength-3);
+        System.arraycopy(data, 0, writeBuffer, 3, dataLength-3);
 
         // Perform SPI transaction
-        mSpi.SendData(dataLength, readWriteBuffer);
+        mSpi.singleWrite(writeBuffer, dataLength, dummy, true);
     }
 
 
@@ -1116,14 +1074,12 @@ public abstract class Dwm1000 {
     }
 
     // Reset FT311 parameters for SPI-M interface
-    private void resetFT311(){
+    private void resetSpi(){
         config.spi.reset();
     }
-    private void maxSpeedFT311(){
-        byte clockPhaseMode      = (byte) 0x00;
-        Define.Spi.DATAORDER dataOrderSelected   = Define.Spi.DATAORDER.MSB;
-        int clockFreq            = 18000000;
-        config.spi.set(clockPhaseMode,dataOrderSelected,clockFreq);
+    private void maxSpeedSpi(){
+        config.spi.clockDivider = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_2;
+        config.spi.update();
     }
 
 

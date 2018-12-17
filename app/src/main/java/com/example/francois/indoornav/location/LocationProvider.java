@@ -39,6 +39,7 @@ public class LocationProvider extends HandlerThread{
 
     public void onPause() {
         update = false;
+        handler.removeCallbacksAndMessages(null);
     }
 
     void postMessage(Message msg){
