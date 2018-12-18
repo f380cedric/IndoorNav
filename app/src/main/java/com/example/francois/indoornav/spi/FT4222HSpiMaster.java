@@ -117,6 +117,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         if(mSpi != null) {
             result =  mSpi.init(ioLine, clock, cpol, cpha, ssoMap);
         }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
+        }
         return result;
     }
 
@@ -126,6 +131,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         if(mSpi != null) {
             result = mSpi.reset();
         }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
+        }
         return result;
     }
 
@@ -134,6 +144,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.setLines(spiMode);
+        }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
         }
         return result;
     }
@@ -145,6 +160,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         if(mSpi != null) {
             result = mSpi.singleWrite(writeBuffer, sizeToTransfer, sizeTransferred, isEndTransaction);
         }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
+        }
         return result;
     }
 
@@ -154,6 +174,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.singleRead(readBuffer, sizeToTransfer, sizeOfRead, isEndTransaction);
+        }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
         }
         return result;
     }
@@ -166,6 +191,11 @@ public class FT4222HSpiMaster implements SpiMaster {
             result = mSpi.singleReadWrite(readBuffer,  writeBuffer, sizeToTransfer, sizeTransferred,
                     isEndTransaction);
         }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
+        }
         return result;
     }
 
@@ -177,6 +207,11 @@ public class FT4222HSpiMaster implements SpiMaster {
             result = mSpi.multiReadWrite(readBuffer, writeBuffer, singleWriteBytes, multiWriteBytes,
                     multiReadBytes, sizeOfRead);
         }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
+        }
         return result;
     }
 
@@ -184,6 +219,11 @@ public class FT4222HSpiMaster implements SpiMaster {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.setDrivingStrength(clkStrength, ioStrength, ssoStregth);
+        }
+        if(result != FT_4222_Defines.FT4222_STATUS.FT4222_OK) {
+            if(mListener != null) {
+                mListener.onDataFailure(result);
+            }
         }
         return result;
     }
