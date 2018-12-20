@@ -1,5 +1,7 @@
 package com.example.francois.indoornav.decawave;
 
+import android.util.Log;
+
 import com.example.francois.indoornav.spi.FT4222HSpiMaster;
 import com.ftdi.j2xx.ft4222.FT_4222_Defines;
 import java.nio.ByteBuffer;
@@ -912,7 +914,7 @@ public abstract class Dwm1000 {
         } else if ((sys_status & RX_OK) == RX_OK) {
             result = 0;
         } else if ((sys_status & (1<<(RXDFR+8))) == 1<<(RXDFR+8)) {
-            throw new java.lang.Error("LDE misconfiguration");
+            Log.e("DWM1000 RX", "LDE misconfiguration");
         }
         return result;
     }
