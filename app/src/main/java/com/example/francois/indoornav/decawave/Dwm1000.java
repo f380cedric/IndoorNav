@@ -69,6 +69,7 @@ public abstract class Dwm1000 {
         Config() {
             spi = new Spi();
             resetIC();
+            spi.maxSpeed();
             transmitter = new Transmitter();
             receiver = new Receiver();
             channel = Define.Channel.CHANNEL._5;
