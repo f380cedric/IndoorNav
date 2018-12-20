@@ -1,6 +1,7 @@
 package com.example.francois.indoornav.decawave;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import com.example.francois.indoornav.location.ILocationProvider;
 import com.example.francois.indoornav.spi.FT4222HSpiMaster;
@@ -77,10 +78,10 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     private long[] ranging(UwbMessages messages) {
         long[] clockTime = new long[6];
         State state = State.POLL_INIT;
-        long startTime = SystemClock.currentThreadTimeMillis();
+        long startTime = SystemClock.elapsedRealtime();
         boolean timeOut = false;
         while (!(state == State.END ||
-                (timeOut = (SystemClock.currentThreadTimeMillis() - startTime > 500)))) {
+                (timeOut = (SystemClock.elapsedRealtime() - startTime > 500)))) {
             switch (state) {
                 case POLL_INIT:
                     sendFrameUwb(messages.masterPoll, (byte) messages.masterPoll.length);
@@ -146,6 +147,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
             idle();
             clockTime = null;
         }
+        Log.d("TimeSpend", String.valueOf(SystemClock.elapsedRealtime() - startTime));
         return clockTime;
     }
 
