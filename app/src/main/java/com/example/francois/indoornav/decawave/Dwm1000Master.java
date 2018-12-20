@@ -44,7 +44,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
 
     private PointD coordinates = new PointD();
 
-    private static final int TAGZ = 155;
+    private static final int TAGZ = 115;
 
     public Dwm1000Master(FT311SPIMaster spi) {
         super(spi);

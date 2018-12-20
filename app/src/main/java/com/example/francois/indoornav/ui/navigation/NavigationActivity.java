@@ -110,7 +110,8 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
     public boolean handleMessage(Message msg) {
         if (msg.what == ILocationProvider.SUCCESS) {
             navigationView.setPositions((PointD) msg.obj);
-            displayCoordinates.setText(msg.obj.toString());
+            displayCoordinates.setText(getString(R.string.coor_cm,
+                    ((PointD) msg.obj).x, ((PointD) msg.obj).y));
         }
         return true;
     }
