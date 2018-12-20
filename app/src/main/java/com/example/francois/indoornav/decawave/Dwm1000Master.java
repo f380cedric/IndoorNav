@@ -45,7 +45,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     private static final int BEACONPOS3Y = 699;
     private static final int BEACONPOS3Z = 155;
 
-    private static final int TAGZ = 155;
+    private static final int TAGZ = 115;
 
     private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
 
