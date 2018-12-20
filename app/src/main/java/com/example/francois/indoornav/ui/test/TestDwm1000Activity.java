@@ -1,5 +1,6 @@
 package com.example.francois.indoornav.ui.test;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -85,8 +86,38 @@ public class TestDwm1000Activity extends AppCompatActivity {
     }
 
     // Button to test DWM1000 connection
-    public void testDwm1000Connection(View view){
-        if (dwm1000.initDwm1000()){
+    static boolean started = false;
+    public void testDwm1000Connection(View view) {
+        if (!started) {
+            new AsyncTask<Void, Void, Object[]>() {
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    started = true;
+                }
+
+                @Override
+                protected Object[] doInBackground(Void... voids) {
+                    boolean res = dwm1000.initDwm1000();
+                    int id = byteArray4ToInt(dwm1000.readDeviceId());
+                    return new Object[] {res, id};
+                }
+
+                @Override
+                protected void onPostExecute(Object[] objects) {
+                    super.onPostExecute(objects);
+                if ((boolean) objects[0]) {
+                    textTestBox.setText(R.string.success_init);
+                }
+                else{
+                    textTestBox.setText(R.string.fail_init);
+                }
+                    textDWM1000ID.setText(getString(R.string.device_id, (int)objects[1]));
+                    started = false;
+                }
+            }.execute();
+        }
+        /*if (dwm1000.initDwm1000()){
             textTestBox.setText(R.string.success_init);
         }
         else{
@@ -94,7 +125,7 @@ public class TestDwm1000Activity extends AppCompatActivity {
         }
 
         byte[] deviceId = dwm1000.readDeviceId();
-        textDWM1000ID.setText(getString(R.string.device_id, byteArray4ToInt(deviceId)));
+        textDWM1000ID.setText(getString(R.string.device_id, byteArray4ToInt(deviceId)));*/
     }
 
     // Button to explore DWM1000 Environment

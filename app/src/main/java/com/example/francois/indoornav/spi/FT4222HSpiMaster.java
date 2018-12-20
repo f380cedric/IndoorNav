@@ -96,7 +96,9 @@ public class FT4222HSpiMaster implements SpiMaster {
             String action = intent.getAction();
             if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action))
             {
-                close();
+                synchronized(this) {
+                    close();
+                }
             }
         }
     };
@@ -112,7 +114,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int init(int ioLine, int clock, int cpol, int cpha, byte ssoMap) {
+    public synchronized int init(int ioLine, int clock, int cpol, int cpha, byte ssoMap) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result =  mSpi.init(ioLine, clock, cpol, cpha, ssoMap);
@@ -126,7 +128,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int reset() {
+    public synchronized int reset() {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.reset();
@@ -140,7 +142,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int setLines(int spiMode) {
+    public synchronized int setLines(int spiMode) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.setLines(spiMode);
@@ -154,7 +156,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int singleWrite(byte[] writeBuffer, int sizeToTransfer, int[] sizeTransferred,
+    public synchronized int singleWrite(byte[] writeBuffer, int sizeToTransfer, int[] sizeTransferred,
                            boolean isEndTransaction) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
@@ -169,7 +171,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int singleRead(byte[] readBuffer, int sizeToTransfer, int[] sizeOfRead,
+    public synchronized int singleRead(byte[] readBuffer, int sizeToTransfer, int[] sizeOfRead,
                           boolean isEndTransaction) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
@@ -184,7 +186,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int singleReadWrite(byte[] readBuffer, byte[] writeBuffer, int sizeToTransfer,
+    public synchronized int singleReadWrite(byte[] readBuffer, byte[] writeBuffer, int sizeToTransfer,
                                int[] sizeTransferred, boolean isEndTransaction) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
@@ -200,7 +202,7 @@ public class FT4222HSpiMaster implements SpiMaster {
     }
 
     @Override
-    public int multiReadWrite(byte[] readBuffer, byte[] writeBuffer, int singleWriteBytes,
+    public synchronized int multiReadWrite(byte[] readBuffer, byte[] writeBuffer, int singleWriteBytes,
                               int multiWriteBytes, int multiReadBytes, int[] sizeOfRead) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
@@ -215,7 +217,7 @@ public class FT4222HSpiMaster implements SpiMaster {
         return result;
     }
 
-    public int setDrivingStrength(int clkStrength, int ioStrength, int ssoStregth) {
+    public synchronized int setDrivingStrength(int clkStrength, int ioStrength, int ssoStregth) {
         int result = FT_4222_Defines.FT4222_STATUS.FT4222_DEVICE_NOT_FOUND;
         if(mSpi != null) {
             result = mSpi.setDrivingStrength(clkStrength, ioStrength, ssoStregth);

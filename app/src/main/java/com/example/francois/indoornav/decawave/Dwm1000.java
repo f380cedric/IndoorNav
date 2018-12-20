@@ -122,7 +122,6 @@ public abstract class Dwm1000 {
             pmsc_ctrl0[1] = (byte)0x02;
             writeDataSpi(address, offset, pmsc_ctrl0, dataLength);
             sleep(10);
-            //maxSpeedFT311();
         }
 
         void setChannel(Define.Channel.CHANNEL channel) {
@@ -713,11 +712,11 @@ public abstract class Dwm1000 {
         }
 
         class Spi {
-            int ioLine          = FT_4222_Defines.FT4222_SPIMode.SPI_IO_SINGLE;
-            int cpol            = FT_4222_Defines.FT4222_SPICPOL.CLK_IDLE_LOW;
-            int cpha            = FT_4222_Defines.FT4222_SPICPHA.CLK_LEADING;
-            int clockDivider    = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_8;
-            byte ssoMap         = 1;
+            int ioLine;
+            int cpol;
+            int cpha;
+            int clockDivider;
+            byte ssoMap;
 
             Spi(){
                 reset();
@@ -735,8 +734,13 @@ public abstract class Dwm1000 {
                 ssoMap          = 1;
                 update();
                 mSpi.setDrivingStrength(FT_4222_Defines.SPI_DrivingStrength.DS_4MA,
-                        FT_4222_Defines.SPI_DrivingStrength.DS_12MA,
+                        FT_4222_Defines.SPI_DrivingStrength.DS_8MA,
                         FT_4222_Defines.SPI_DrivingStrength.DS_4MA);
+            }
+
+            void maxSpeed() {
+                clockDivider    = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_2;
+                update();
             }
         }
     }
@@ -847,6 +851,7 @@ public abstract class Dwm1000 {
 
         config.receiver.setFrameTimeoutDelay((short)5000);
 
+        //maxSpeedSpi();
         // End of initialization function
         return true;
     }
@@ -1078,8 +1083,7 @@ public abstract class Dwm1000 {
         config.spi.reset();
     }
     private void maxSpeedSpi(){
-        config.spi.clockDivider = FT_4222_Defines.FT4222_SPIClock.CLK_DIV_2;
-        config.spi.update();
+        config.spi.maxSpeed();
     }
 
 

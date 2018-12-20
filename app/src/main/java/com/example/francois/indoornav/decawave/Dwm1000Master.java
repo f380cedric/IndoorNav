@@ -81,7 +81,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
         long startTime = SystemClock.elapsedRealtime();
         boolean timeOut = false;
         while (!(state == State.END ||
-                (timeOut = (SystemClock.elapsedRealtime() - startTime > 500)))) {
+                (timeOut = (SystemClock.elapsedRealtime() - startTime > 45)))) {
             switch (state) {
                 case POLL_INIT:
                     sendFrameUwb(messages.masterPoll, (byte) messages.masterPoll.length);
