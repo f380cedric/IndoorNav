@@ -36,15 +36,15 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     }
 
     private PointD coordinates = new PointD();
-    private static final int BEACONPOS1X = 60;
-    private static final int BEACONPOS1Y = 321;
+    private static final int BEACONPOS1X = 87;
+    private static final int BEACONPOS1Y = 323;
     private static final int BEACONPOS1Z = 295;
-    private static final int BEACONPOS2X = 1220;
-    private static final int BEACONPOS2Y = 46;
+    private static final int BEACONPOS2X = 1297;
+    private static final int BEACONPOS2Y = 48;
     private static final int BEACONPOS2Z = 225;
-    private static final int BEACONPOS3X = 1220;
-    private static final int BEACONPOS3Y = 699;
-    private static final int BEACONPOS3Z = 155;
+    private static final int BEACONPOS3X = 1297;
+    private static final int BEACONPOS3Y = 750;
+    private static final int BEACONPOS3Z = 150;
 
     private static final int TAGZ = 115;
 
