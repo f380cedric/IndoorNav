@@ -1,6 +1,7 @@
 package com.example.francois.indoornav.ui.navigation;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -14,7 +15,10 @@ import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.example.francois.indoornav.R;
 import com.example.francois.indoornav.util.PointD;
+
+import java.util.ArrayList;
 
 class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Callback
 {
@@ -24,6 +28,9 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     private int maxHeight;
     private SurfaceHolder surfaceHolder;
     private IndoorMap indoorMap;
+    private int mapArrayId;
+    private int userIconId;
+    private int anchorIconId;
 
     private Rect src = new Rect();
     private RectF dst = new RectF();
@@ -34,16 +41,44 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
 
     public NavigationView(Context context) {
         super(context);
+        mapArrayId = R.array.littleRoom;
+        userIconId = R.drawable.ic_location_arrow;
+        anchorIconId = R.drawable.ic_location_marker;
         initSurface();
     }
 
     public NavigationView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
+        getAttributes(context, attributeSet);
         initSurface();
+    }
+
+    private void getAttributes(Context context, AttributeSet attributeSet) {
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attributeSet,
+                R.styleable.NavigationIcons,
+                0, 0);
+
+        try {
+            mapArrayId = a.getResourceId(R.styleable.NavigationIcons_mapArrayId,
+                    R.array.littleRoom);
+            userIconId = a.getResourceId(R.styleable.NavigationIcons_userIconId,
+                    R.drawable.ic_location_arrow);
+            anchorIconId = a.getResourceId(R.styleable.NavigationIcons_anchorIconId,
+                    R.drawable.ic_location_marker);
+
+        } finally {
+            a.recycle();
+        }
+    }
+
+    void setMapArrayId(int id) {
+        mapArrayId = id;
     }
 
     public NavigationView(Context context, AttributeSet attributeSet, int integer) {
         super(context, attributeSet, integer);
+        getAttributes(context, attributeSet);
         initSurface();
 
     }
@@ -53,8 +88,8 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
         surfaceHolder.addCallback(this);
     }
 
-    private void initMap(Context context, int width, int height) {
-        indoorMap = new IndoorMap(context, width, height);
+    private void initMap(Context context ,int width, int height, int mapArrayId, int userIconId, int anchorIconId) {
+        indoorMap = new IndoorMap(context, width, height, mapArrayId, userIconId, anchorIconId);
         maxWidth = indoorMap.getMaxWidth();
         maxHeight = indoorMap.getMaxHeight();
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -64,13 +99,13 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     void setPositions(PointD positions) {
         Log.d("Location received", positions.x + ", " + positions.y);
         if (indoorMap != null) {
-            indoorMap.setMarkerPos(positions.x, positions.y);
+            indoorMap.setUserPos(positions.x, positions.y);
         }
     }
 
     void setOrientation(double orientation) {
         if (indoorMap != null) {
-            indoorMap.setMarkerOrientation(orientation);
+            indoorMap.setUserOrientation(orientation);
         }
     }
 
@@ -98,22 +133,25 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
             int h = (int)indoorMap.getHeight() ;
             double sX = indoorMap.getMapScaleX();
             double sY = indoorMap.getMapScaleY();
-            IndoorMap.Marker marker = indoorMap.getMarker();
-            double markerCenterX = marker.getCenterX();
-            double markerCenterY = marker.getCenterY();
-            double markerOrientation = marker.getTheta()-45;
-            double markerX = (marker.getX()-x)/sX- markerCenterX;
-            double markerY = (marker.getY()-y)/sY- markerCenterY;
             src.set(x, y,w + x,h + y);
             dst.set(0,0, maxWidth , maxHeight);
             canvas.drawBitmap(indoorMap.getBitmap(), src, dst, null);
-
-            if (dst.contains((float)markerX, (float)markerY)) {
-                Matrix matrix = new Matrix();
-                matrix.setRotate((float)markerOrientation, (float)markerCenterX,
-                        (float)markerCenterY);
-                matrix.postTranslate((float)markerX, (float)markerY);
-                canvas.drawBitmap(marker.getIcon(), matrix, null);
+            IndoorMap.Marker marker;
+            ArrayList<IndoorMap.Marker> markerList = indoorMap.getMarkerList();
+            for(int j = markerList.size() -1; j >= 0; --j) {
+                marker = markerList.get(j);
+                double markerCenterX = marker.getCenterX();
+                double markerCenterY = marker.getCenterY();
+                double markerOrientation = marker.getTheta();
+                double markerX = (marker.getX() - x) / sX - markerCenterX;
+                double markerY = (marker.getY() - y) / sY - markerCenterY;
+                if (dst.contains((float) markerX, (float) markerY)) {
+                    Matrix matrix = new Matrix();
+                    matrix.setRotate((float) markerOrientation, (float) markerCenterX,
+                            (float) markerCenterY);
+                    matrix.postTranslate((float) markerX, (float) markerY);
+                    canvas.drawBitmap(marker.getIcon(), matrix, null);
+                }
             }
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
@@ -130,7 +168,7 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         initMap(getContext(), MeasureSpec.getSize(widthMeasureSpec),
-                MeasureSpec.getSize(heightMeasureSpec));
+                MeasureSpec.getSize(heightMeasureSpec), mapArrayId, userIconId, anchorIconId);
         setMeasuredDimension(maxWidth, maxHeight);
     }
 

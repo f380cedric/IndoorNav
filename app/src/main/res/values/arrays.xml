@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="littleRoom">
+        <item name="Id">@drawable/little_room</item>
+        <item name="width">1486</item>
+        <item name="height">1643</item>
+        <item name="offsetX">63</item>
+        <item name="offsetY">118</item>
+        <item>87</item>
+        <item>323</item>
+        <item>295</item>
+        <item>1297</item>
+        <item>48</item>
+        <item>225</item>
+        <item>1297</item>
+        <item>750</item>
+        <item>150</item>
+    </array>
+
+    <array name="blankRoom">
+        <item name="Id">@drawable/blank_room</item>
+        <item name="width">2000</item>
+        <item name="height">2000</item>
+        <item name="offsetX">0</item>
+        <item name="offsetY">0</item>
+        <item>100</item>
+        <item>323</item>
+        <item>100</item>
+        <item>100</item>
+        <item>48</item>
+        <item>100</item>
+        <item>100</item>
+        <item>750</item>
+        <item>150</item>
+    </array>
+</resources>

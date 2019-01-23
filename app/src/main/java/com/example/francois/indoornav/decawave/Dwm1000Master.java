@@ -36,19 +36,66 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     }
 
     private PointD coordinates = new PointD();
-    private static final int BEACONPOS1X = 87;
-    private static final int BEACONPOS1Y = 323;
-    private static final int BEACONPOS1Z = 295;
-    private static final int BEACONPOS2X = 1297;
-    private static final int BEACONPOS2Y = 48;
-    private static final int BEACONPOS2Z = 225;
-    private static final int BEACONPOS3X = 1297;
-    private static final int BEACONPOS3Y = 750;
-    private static final int BEACONPOS3Z = 150;
+    private static int BEACONPOS1X = 87;
+    private static int BEACONPOS1Y = 323;
+    private static int BEACONPOS1Z = 295;
+    private static int BEACONPOS2X = 1297;
+    private static int BEACONPOS2Y = 48;
+    private static int BEACONPOS2Z = 225;
+    private static int BEACONPOS3X = 1297;
+    private static int BEACONPOS3Y = 750;
+    private static int BEACONPOS3Z = 150;
+
+    private static final int[] anchorsCoordinates = new int[]{BEACONPOS1X, BEACONPOS1Y, BEACONPOS2X,
+            BEACONPOS2Y, BEACONPOS3X, BEACONPOS3Y};
+
+    public static int[] getAnchorsCoordinates(){
+        return anchorsCoordinates;
+    }
+
+    public static void resetAnchorsCoordinates() {
+        BEACONPOS1X = 87;
+        BEACONPOS1Y = 323;
+        BEACONPOS1Z = 295;
+        BEACONPOS2X = 1297;
+        BEACONPOS2Y = 48;
+        BEACONPOS2Z = 225;
+        BEACONPOS3X = 1297;
+        BEACONPOS3Y = 750;
+        BEACONPOS3Z = 150;
+        updateArrays();
+    }
+
+    private static void updateArrays() {
+        anchorsCoordinates[0] = BEACONPOS1X;
+        anchorsCoordinates[1] = BEACONPOS1Y;
+        anchorsCoordinates[2] = BEACONPOS2X;
+        anchorsCoordinates[3] = BEACONPOS2Y;
+        anchorsCoordinates[4] = BEACONPOS3X;
+        anchorsCoordinates[5] = BEACONPOS3Y;
+        deltah[0] = Math.abs(BEACONPOS1Z - TAGZ);
+        deltah[1] = Math.abs(BEACONPOS2Z - TAGZ);
+        deltah[2] = Math.abs(BEACONPOS3Z - TAGZ);
+    }
+
+    public static void setAnchorsCoordinates(int x1, int y1, int z1, int x2, int y2, int z2,
+                                             int x3, int y3, int z3){
+            BEACONPOS1X = x1;
+            BEACONPOS1Y = y1;
+            BEACONPOS1Z = z1;
+            BEACONPOS2X = x2;
+            BEACONPOS2Y = y2;
+            BEACONPOS2Z = z2;
+            BEACONPOS3X = x3;
+            BEACONPOS3Y = y3;
+            BEACONPOS3Z = z3;
+            updateArrays();
+    }
 
     private static final int TAGZ = 115;
 
-    private static final int[] deltah = {BEACONPOS1Z - TAGZ, BEACONPOS2Z - TAGZ, BEACONPOS3Z - TAGZ};
+    private static final int[] deltah = {Math.abs(BEACONPOS1Z - TAGZ), Math.abs(BEACONPOS2Z - TAGZ),
+            Math.abs(BEACONPOS3Z - TAGZ)};
 
     public Dwm1000Master(FT4222HSpiMaster spi) {
         super(spi);

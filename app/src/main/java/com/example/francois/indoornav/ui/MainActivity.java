@@ -39,4 +39,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void startBlankNavigation(View view) {
+        Intent intent = new Intent(this, NavigationActivity.class);
+        intent.putExtra("mapId", R.array.blankRoom);
+        startActivity(intent);
+    }
 }

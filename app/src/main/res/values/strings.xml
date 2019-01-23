@@ -24,4 +24,5 @@
     <string name="it">Iteration: %1$d</string>
     <string name="coor">Coordinates: %1$f, %2$f</string>
     <string name="coor_cm">Coordinates: %1$f, %2$f [cm]</string>
+    <string name="blank_navigation">Blank Navigation</string>
 </resources>

@@ -41,6 +41,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         navigationView = findViewById(R.id.navigationView);
+        navigationView.setMapArrayId(getIntent().getIntExtra("mapId", R.array.littleRoom));
         displayCoordinates = findViewById(R.id.displayCoordinates);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -49,7 +50,6 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         sensorFusion = new SensorFusion();
         sensorFusion.setMode(SensorFusion.Mode.FUSION);
         mSpi = new FT4222HSpiMaster(this, this);
-
         handler = new Handler(this);
     }
 
@@ -69,7 +69,7 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
 
     public void updateOrientationDisplay() {
         double azimuthValue = sensorFusion.getAzimuth();
-        navigationView.setOrientation(azimuthValue);
+        navigationView.setOrientation(azimuthValue-45);
     }
 
     @Override
