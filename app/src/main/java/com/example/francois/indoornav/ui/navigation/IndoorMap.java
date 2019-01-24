@@ -28,33 +28,26 @@ class IndoorMap {
     private ArrayList<Marker> markerList = new ArrayList<>(7);
     private Marker user;
     private Bitmap anchorBitmap;
+    private int mapArrayId;
 
     IndoorMap(Context context ,int myScreenX, int myScreenY, int mapArrayId,
               int userIconId, int anchorIconId) {
+        this.mapArrayId = mapArrayId;
+        anchorBitmap = BitmapFactory.decodeResource(context.getResources(),
+                anchorIconId);
+        user = new Marker(BitmapFactory.decodeResource(context.getResources(),
+                userIconId),-50,-50, 0);
         TypedArray mapArray = context.getResources().obtainTypedArray(mapArrayId);
         bitmap = BitmapFactory.decodeResource(context.getResources(),
                 mapArray.getResourceId(0, R.drawable.blank_room));
+
         sizeMapX = bitmap.getWidth();
         sizeMapY = bitmap.getHeight();
         real2MapX = sizeMapX/mapArray.getFloat(1, 0);//1486.25;//1292f;//1290f;
         real2MapY = sizeMapY/mapArray.getFloat(2, 0);///1643.6;//1429f;//1347f;
         offsetX = mapArray.getInt(3, 0);
         offsetY = mapArray.getInt(4,0);
-        Dwm1000Master.setAnchorsCoordinates(mapArray.getInt(5,0),
-                mapArray.getInt(6,0),
-                mapArray.getInt(7,0),
-                mapArray.getInt(8,0),
-                mapArray.getInt(9,0),
-                mapArray.getInt(10,0),
-                mapArray.getInt(11,0),
-                mapArray.getInt(12,0),
-                mapArray.getInt(13,0));
-        mapArray.recycle();
-        user = new Marker(BitmapFactory.decodeResource(context.getResources(),
-                userIconId),-50,-50, 0);
         markerList.add(user);
-        anchorBitmap = BitmapFactory.decodeResource(context.getResources(),
-                anchorIconId);
         width = sizeMapX;
         height = sizeMapY;
         double ratioScreen = myScreenX/(double)myScreenY;
@@ -69,7 +62,31 @@ class IndoorMap {
         mapPosX = 0;
         mapPosY = 0;
         setUserPos(0,0);
+        if(!Dwm1000Master.AnchorsCoordForced) {
+            resetAnchorsCoodinates(mapArray);
+        }
+        mapArray.recycle();
         setAnchorsPositions(Dwm1000Master.getAnchorsCoordinates());
+    }
+
+    private void resetAnchorsCoodinates(TypedArray mapArray){
+        Dwm1000Master.setAnchorsCoordinates(mapArray.getInt(5, 0),
+                    mapArray.getInt(6, 0),
+                    mapArray.getInt(7, 0),
+                    mapArray.getInt(8, 0),
+                    mapArray.getInt(9, 0),
+                    mapArray.getInt(10, 0),
+                    mapArray.getInt(11, 0),
+                    mapArray.getInt(12, 0),
+                    mapArray.getInt(13, 0));
+        Dwm1000Master.AnchorsCoordForced = false;
+        setAnchorsPositions(Dwm1000Master.getAnchorsCoordinates());
+    }
+
+    void resetAnchorsCoodinates(Context context){
+        TypedArray mapArray = context.getResources().obtainTypedArray(mapArrayId);
+        resetAnchorsCoodinates(mapArray);
+        mapArray.recycle();
     }
 
     void panMap(double distanceX, double distanceY){

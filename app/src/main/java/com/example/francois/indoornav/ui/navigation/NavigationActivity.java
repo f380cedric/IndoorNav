@@ -53,6 +53,10 @@ public class NavigationActivity extends AppCompatActivity implements Handler.Cal
         handler = new Handler(this);
     }
 
+    public void resetAnchorsCoordinates(View view) {
+        navigationView.resetAnchorsCoordinates(this);
+    }
+
     private void registerSensorManagerListeners() {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),

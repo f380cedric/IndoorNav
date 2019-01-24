@@ -193,6 +193,10 @@ class NavigationView extends SurfaceView implements Runnable, SurfaceHolder.Call
         }
     }
 
+    void resetAnchorsCoordinates(Context context) {
+        indoorMap.resetAnchorsCoodinates(context);
+    }
+
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {

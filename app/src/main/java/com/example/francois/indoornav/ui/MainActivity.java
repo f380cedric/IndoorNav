@@ -44,4 +44,8 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("mapId", R.array.blankRoom);
         startActivity(intent);
     }
+
+    public void AnchorsCoordinates(View view) {
+        startActivity(new Intent(this, AnchorsCoordinates.class));
+    }
 }

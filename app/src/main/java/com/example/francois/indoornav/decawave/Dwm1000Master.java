@@ -36,6 +36,7 @@ public class Dwm1000Master extends Dwm1000 implements ILocationProvider {
     }
 
     private PointD coordinates = new PointD();
+    public static boolean AnchorsCoordForced = false;
     private static int BEACONPOS1X = 87;
     private static int BEACONPOS1Y = 323;
     private static int BEACONPOS1Z = 295;
