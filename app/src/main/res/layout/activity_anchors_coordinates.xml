@@ -88,7 +88,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText15" />
 
             <EditText
                 android:id="@+id/editText15"
@@ -97,7 +97,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText16" />
 
             <EditText
                 android:id="@+id/editText16"
@@ -106,7 +106,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText20" />
 
         </TableRow>
 
@@ -128,7 +128,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText21" />
 
             <EditText
                 android:id="@+id/editText21"
@@ -137,7 +137,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText22" />
 
             <EditText
                 android:id="@+id/editText22"
@@ -146,7 +146,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText23" />
         </TableRow>
 
         <TableRow
@@ -167,7 +167,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText24" />
 
             <EditText
                 android:id="@+id/editText24"
@@ -176,7 +176,7 @@
                 android:ems="0"
                 android:inputType="number"
 
-                />
+                android:nextFocusDown="@id/editText25" />
 
             <EditText
                 android:id="@+id/editText25"
