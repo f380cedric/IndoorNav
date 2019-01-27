@@ -21,8 +21,8 @@
         <item name="Id">@drawable/blank_room</item>
         <item name="width">2000</item>
         <item name="height">2000</item>
-        <item name="offsetX">0</item>
-        <item name="offsetY">0</item>
+        <item name="offsetX">100</item>
+        <item name="offsetY">100</item>
         <item>100</item>
         <item>323</item>
         <item>100</item>
